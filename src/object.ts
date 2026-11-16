@@ -105,3 +105,56 @@ export class Snake {
         this.followChain(Engine.engine.mouse, dt, 8);
     };
 }
+
+import {Line2} from 'three/addons/lines/Line2.js';
+import {LineMaterial} from 'three/addons/lines/LineMaterial.js';
+import {LineGeometry} from 'three/addons/lines/LineGeometry.js';
+
+export class DynamicStar {
+    readonly group = new THREE.Group();
+    private body: RAPIER.RigidBody;
+
+    constructor(points: [number, number][], x: number, y: number,
+        fillColor: THREE.ColorRepresentation = 0xf2991f,
+        strokeColor: THREE.ColorRepresentation = 0xffffff,
+    ) {
+        const fill = new THREE.Mesh(
+            new THREE.ShapeGeometry(new THREE.Shape(points.map(([px, py]) => new THREE.Vector2(px, py)))),
+            flat(fillColor));
+        fill.position.z = 0.1;
+
+        const strokeGeo = new LineGeometry();
+        strokeGeo.setPositions([...points, points[0]].flatMap(([px, py]) => [px, py, 0]));
+        const stroke = new Line2(strokeGeo, new LineMaterial({color: strokeColor, linewidth: 0.12, worldUnits: true}));
+        stroke.position.z = 0.2;
+
+        this.group.add(fill, stroke);
+        this.group.position.set(x, y, 0);
+        Engine.engine.scene.add(this.group);
+
+        const world = Physics.world;
+        this.body = world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y));
+        for (let i = 0; i < points.length; i++) {
+            const a = points[i], b = points[(i + 1) % points.length];
+            const desc = RAPIER.ColliderDesc.triangle(
+                {x: 0, y: 0}, {x: a[0], y: a[1]}, {x: b[0], y: b[1]})
+                .setRestitution(0.3)
+                .setFriction(0.6);
+            world.createCollider(desc, this.body);
+        }
+
+        Engine.engine.onUpdate(this.update);
+    }
+
+    destroy() {
+        Engine.engine.offUpdate(this.update);
+        Engine.engine.scene.remove(this.group);
+        Physics.world.removeRigidBody(this.body);
+    }
+
+    private update = () => {
+        const t = this.body.translation();
+        this.group.position.set(t.x, t.y, 0);
+        this.group.rotation.z = this.body.rotation();
+    };
+}

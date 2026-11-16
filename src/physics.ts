@@ -6,7 +6,7 @@ export class Physics {
 
     static async init() {
         await RAPIER.init();
-        Physics.world = new RAPIER.World({x: 0, y: 0});
+        Physics.world = new RAPIER.World({x: 0, y: -9.8});
         Engine.engine.onUpdate(() => Physics.world.step());
     }
 }
