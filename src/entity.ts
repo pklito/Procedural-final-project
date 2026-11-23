@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import RAPIER, { RigidBodyDesc } from '@dimforge/rapier2d-compat';
-import type { Engine } from './engine';
+import type { Engine, Ticks } from './engine';
 
 export const flat = (color: THREE.ColorRepresentation) =>
   new THREE.MeshBasicMaterial({ color });
@@ -10,7 +10,7 @@ export const flat = (color: THREE.ColorRepresentation) =>
  * ownedBodies is th elist of rigidbodies associated.
  * AddBody
  */
-export abstract class Entity {
+export abstract class Entity implements Ticks {
   readonly object = new THREE.Group();
   private ownedBodies: RAPIER.RigidBody[] = [];
 
@@ -26,11 +26,6 @@ export abstract class Entity {
 
   protected addMesh(mesh: THREE.Object3D){
     this.object.add(mesh);
-  }
-
-  protected add(mesh: THREE.Object3D, desd: RAPIER.RigidBodyDesc){
-    this.addMesh(mesh);
-    this.addBody(desd);
   }
 
   fixedUpdate(_dt: number): void {}

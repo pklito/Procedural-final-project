@@ -1,5 +1,5 @@
 import RAPIER from '@dimforge/rapier2d-compat';
-import type { Engine } from './engine';
+import type { Engine, Ticks } from './engine';
 import type { Segment } from './segment';
 import type { Vec2 } from './physics';
 import { Layer, groups } from './physics';
@@ -19,7 +19,7 @@ export interface CreatureJoint {
  * update(dt) - called on loop, applies the torques rn
  * dispose() - destroy 
  */
-export class Creature {
+export class Creature implements Ticks {
   readonly segments = new Set<Segment>();
   readonly joints: CreatureJoint[] = [];
   readonly collisionBit: number;
@@ -63,7 +63,7 @@ export class Creature {
     return cj;
   }
 
-  update(dt: number) {
+  fixedUpdate(dt: number) {
     for (const { segA, segB, targetAngle } of this.joints) {
       const relAngle = segB.rb.rotation() - segA.rb.rotation();
       const error    = targetAngle - relAngle;

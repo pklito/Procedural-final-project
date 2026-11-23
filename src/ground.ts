@@ -19,10 +19,13 @@ export class Ground extends Entity {
 
     this.addMesh(mesh);
     const body = this.addBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x, y));
+
     this.world.createCollider(
       RAPIER.ColliderDesc.cuboid(width / 2, height / 2)
         .setCollisionGroups(groups(Layer.GROUND, 0xffff)),
       body,
     );
   }
+  
+  
 }

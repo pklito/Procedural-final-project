@@ -32,16 +32,15 @@ export class Physics {
     this.world.step();
   }
 
-  // ── collision-group helpers ───────────────────────────────────
-
   /** Allocate a unique collision-group bit for a new creature (up to 14 creatures). */
+  
   allocateCreatureGroup(): number {
     if (this.nextCreatureBit > 15)
       throw new Error('No more creature collision-group bits available (max 14)');
     return 1 << this.nextCreatureBit++;
   }
 
-  // ── queries ──────────────────────────────────────────────────
+  // getters
 
   castRay(origin: Vec2, dir: Vec2, maxDist: number, filterGroups?: number): number | null {
     const hit = this.world.castRay(
@@ -49,7 +48,7 @@ export class Physics {
     return hit ? hit.timeOfImpact : null;
   }
 
-  // ── joint helpers ────────────────────────────────────────────
+  // joint builders
 
   revolute(a: RAPIER.RigidBody, b: RAPIER.RigidBody, anchorA: Vec2, anchorB: Vec2) {
     return this.world.createImpulseJoint(

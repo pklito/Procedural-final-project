@@ -39,7 +39,7 @@ export class Segment extends Entity {
 
     const mesh = Segment.buildMesh(o.shape, color);
     mesh.position.z = 0.2;
-    this.object.add(mesh);
+    this.addMesh(mesh);
 
     this.rb = this.addBody(
       RAPIER.RigidBodyDesc.dynamic()

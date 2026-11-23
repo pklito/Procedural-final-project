@@ -1,5 +1,5 @@
 import RAPIER from '@dimforge/rapier2d-compat';
-import type { Engine } from './engine';
+import type { Engine, Ticks } from './engine';
 
 /**
  * Mouse-drag system.
@@ -7,7 +7,7 @@ import type { Engine } from './engine';
  * Click a dynamic body to grab it.  While held, a soft spring force
  * pulls the body toward the cursor.  Release to let go.
  */
-export class DragSystem {
+export class DragSystem implements Ticks{
   private dragged: RAPIER.RigidBody | null = null;
   private held = false;
 
@@ -31,8 +31,6 @@ export class DragSystem {
       this.dragged = null;
     });
   }
-
-  // ── internals ───────────────────────────────────────────────
 
   /** Find the first dynamic body under the cursor and store it. */
   private grab() {
@@ -72,5 +70,9 @@ export class DragSystem {
     const fy = this.stiffness * (my - pos.y) - this.damping * vel.y;
 
     this.dragged.applyImpulse({ x: fx * dt, y: fy * dt }, true);
+  }
+
+  fixedUpdate(dt: number): void {
+    this.applyForces(dt);
   }
 }

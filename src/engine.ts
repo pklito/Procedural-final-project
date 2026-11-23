@@ -4,28 +4,28 @@ import { DragSystem } from './drag';
 import type { Entity } from './entity';
 import type { Creature } from './creature';
 
+export interface Ticks {fixedUpdate(dt: number):void;}
+
 const VIEW_HEIGHT = 10;
 const MAX_FRAME  = 0.1; // cap to avoid spiral-of-death after tab switch
 
 export class Engine {
-  // ── rendering ───────────────────────────────────────────────
+  // 3JS components
   readonly canvas   = document.getElementById('canvas') as HTMLCanvasElement;
   readonly renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
   readonly scene    = new THREE.Scene();
   readonly camera   = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
   readonly mouse    = new THREE.Vector3();
 
-  // ── subsystems ──────────────────────────────────────────────
+  // Drag subsystem
   readonly drag: DragSystem;
 
-  // ── bookkeeping ─────────────────────────────────────────────
+  // engine stuff
   private readonly clock     = new THREE.Clock();
   private readonly entities  = new Set<Entity>();
   private readonly creatures = new Set<Creature>();
   private accumulator = 0;
   private debug?: THREE.LineSegments;
-
-  // ── lifecycle ───────────────────────────────────────────────
 
   static async create() {
     return new Engine(await Physics.create());
@@ -36,7 +36,7 @@ export class Engine {
     this.renderer.setClearColor(0x1a1c1f);
     this.camera.position.z = 10;
 
-    // Mouse tracking (world-space)
+    // Mouse position world space
     this.canvas.addEventListener('mousemove', (e) => {
       this.mouse
         .set(
@@ -56,8 +56,7 @@ export class Engine {
     this.resize();
   }
 
-  // ── entity management ───────────────────────────────────────
-
+  //Entity
   add<T extends Entity>(entity: T): T {
     this.entities.add(entity);
     this.scene.add(entity.object);
@@ -70,8 +69,7 @@ export class Engine {
     entity.dispose();
   }
 
-  // ── creature management ─────────────────────────────────────
-
+  //Creature
   addCreature(creature: Creature): Creature {
     this.creatures.add(creature);
     return creature;
@@ -82,8 +80,7 @@ export class Engine {
     creature.dispose(); // also removes its segments from this.entities
   }
 
-  // ── viewport ────────────────────────────────────────────────
-
+  //window
   resize() {
     const aspect = window.innerWidth / window.innerHeight;
     this.camera.left   = (-VIEW_HEIGHT * aspect) / 2;
@@ -94,8 +91,7 @@ export class Engine {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  // ── main loop ───────────────────────────────────────────────
-
+  //physics loop
   start() {
     this.renderer.setAnimationLoop(() => {
       this.accumulator += Math.min(this.clock.getDelta(), MAX_FRAME);
@@ -103,8 +99,8 @@ export class Engine {
       // Fixed-rate physics ticks
       while (this.accumulator >= FIXED_DT) {
         for (const e of this.entities) e.fixedUpdate(FIXED_DT);
-        for (const c of this.creatures) c.update(FIXED_DT);
-        this.drag.applyForces(FIXED_DT);
+        for (const c of this.creatures) c.fixedUpdate(FIXED_DT);
+        this.drag.fixedUpdate(FIXED_DT);
         this.physics.step();
         this.accumulator -= FIXED_DT;
       }
@@ -115,8 +111,6 @@ export class Engine {
       this.renderer.render(this.scene, this.camera);
     });
   }
-
-  // ── debug overlay (toggle with P) ──────────────────────────
 
   private toggleDebug() {
     if (this.debug) {
