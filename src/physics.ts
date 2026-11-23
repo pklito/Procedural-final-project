@@ -1,12 +1,48 @@
 import RAPIER from '@dimforge/rapier2d-compat';
-import {Engine} from './engine';
+
+export const FIXED_DT = 1 / 60;
+
+export type Vec2 = {x: number; y: number};
+
+export const Layer = {
+  GROUND: 0x0001,
+  SNAKE: 0x0002,
+  PROP: 0x0004,
+  ALL: 0xffff,
+} as const;
+
+export const groups = (membership: number, filter: number) =>
+  (((membership & 0xffff) << 16) | (filter & 0xffff)) >>> 0;
 
 export class Physics {
-    static world: RAPIER.World;
+  readonly world: RAPIER.World;
 
-    static async init() {
-        await RAPIER.init();
-        Physics.world = new RAPIER.World({x: 0, y: -9.8});
-        Engine.engine.onUpdate(() => Physics.world.step());
-    }
+  private constructor() {
+    this.world = new RAPIER.World({x: 0, y: -9.8});
+    this.world.timestep = FIXED_DT;
+  }
+
+  static async create() {
+    await RAPIER.init();
+    return new Physics();
+  }
+
+  step() {
+    this.world.step();
+  }
+
+  castRay(origin: Vec2, dir: Vec2, maxDist: number, filterGroups?: number): number | null {
+    const hit = this.world.castRay(new RAPIER.Ray(origin, dir), maxDist, true, undefined, filterGroups);
+    return hit ? hit.timeOfImpact : null;
+  }
+
+  revolute(a: RAPIER.RigidBody, b: RAPIER.RigidBody, anchorA: Vec2, anchorB: Vec2) {
+    return this.world.createImpulseJoint(RAPIER.JointData.revolute(anchorA, anchorB), a, b, true);
+  }
+
+  spring(a: RAPIER.RigidBody, b: RAPIER.RigidBody, rest: number, stiffness: number, damping: number,
+         anchorA: Vec2 = {x: 0, y: 0}, anchorB: Vec2 = {x: 0, y: 0}) {
+    return this.world.createImpulseJoint(
+      RAPIER.JointData.spring(rest, stiffness, damping, anchorA, anchorB), a, b, true);
+  }
 }
