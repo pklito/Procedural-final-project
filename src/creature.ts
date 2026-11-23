@@ -14,7 +14,10 @@ export interface CreatureJoint {
 /**
  * Creature class, holds segments and joints.
  * addSegment(Segment):Segment - modifies a segment to be part of this creature(collision)
- * removeSegment()
+ * removeSegment(Segment) - re-enables collisions and disconnects all joints.
+ * connect(Segment, Segment, Pos1, Pos2, angle) - connect two segments in creature
+ * update(dt) - called on loop, applies the torques rn
+ * dispose() - destroy 
  */
 export class Creature {
   readonly segments = new Set<Segment>();
@@ -54,7 +57,7 @@ export class Creature {
     anchorA: Vec2, anchorB: Vec2,
     targetAngle = 0,
   ): CreatureJoint {
-    const joint = this.engine.physics.revolute(a.body, b.body, anchorA, anchorB);
+    const joint = this.engine.physics.revolute(a.rb, b.rb, anchorA, anchorB);
     const cj: CreatureJoint = { joint, segA: a, segB: b, targetAngle };
     this.joints.push(cj);
     return cj;
@@ -62,17 +65,17 @@ export class Creature {
 
   update(dt: number) {
     for (const { segA, segB, targetAngle } of this.joints) {
-      const relAngle = segB.body.rotation() - segA.body.rotation();
+      const relAngle = segB.rb.rotation() - segA.rb.rotation();
       const error    = targetAngle - relAngle;
 
       const normErr = Math.atan2(Math.sin(error), Math.cos(error));
-      const relVel  = segB.body.angvel() - segA.body.angvel();
+      const relVel  = segB.rb.angvel() - segA.rb.angvel();
 
       const torque =
         (this.straightenStiffness * normErr - this.straightenDamping * relVel) * dt;
 
-      segA.body.applyTorqueImpulse(-torque, true);
-      segB.body.applyTorqueImpulse( torque, true);
+      segA.rb.applyTorqueImpulse(-torque, true);
+      segB.rb.applyTorqueImpulse( torque, true);
     }
   }
 

@@ -4,7 +4,6 @@ import { Entity, flat } from './entity';
 import type { Engine } from './engine';
 import { Layer, groups } from './physics';
 
-/** A static rectangular collider with a flat-colour visual. */
 export class Ground extends Entity {
   constructor(
     engine: Engine,
@@ -17,8 +16,8 @@ export class Ground extends Entity {
     const mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(width, height), flat(color));
     mesh.position.set(x, y, 0.05);
-    this.object.add(mesh);
 
+    this.addMesh(mesh);
     const body = this.addBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x, y));
     this.world.createCollider(
       RAPIER.ColliderDesc.cuboid(width / 2, height / 2)

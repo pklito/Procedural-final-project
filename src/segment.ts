@@ -24,13 +24,10 @@ export interface SegmentOptions {
 }
 
 /**
- * A single draggable physics object — the atomic building-block of creatures.
- *
- * Can be a circle, rectangle, or convex polygon.  When added to a Creature
- * its collision group is updated so it won't self-collide with siblings.
+ * body
  */
 export class Segment extends Entity {
-  readonly body: RAPIER.RigidBody;
+  readonly rb: RAPIER.RigidBody;
   readonly collider: RAPIER.Collider;
   readonly shape: SegmentShape;
   creature: Creature | null = null;
@@ -40,19 +37,16 @@ export class Segment extends Entity {
     this.shape = o.shape;
     const color = o.color ?? 0x6699cc;
 
-    // ── visual ────────────────────────────────────────────────
     const mesh = Segment.buildMesh(o.shape, color);
     mesh.position.z = 0.2;
     this.object.add(mesh);
 
-    // ── physics body ──────────────────────────────────────────
-    this.body = this.addBody(
+    this.rb = this.addBody(
       RAPIER.RigidBodyDesc.dynamic()
         .setTranslation(o.x, o.y)
         .setAngularDamping(o.angularDamping ?? 1.0),
     );
 
-    // ── collider ──────────────────────────────────────────────
     const cd = Segment.buildCollider(o.shape);
     cd.setDensity(o.density ?? 1);
     cd.setRestitution(o.restitution ?? 0.2);
@@ -60,7 +54,7 @@ export class Segment extends Entity {
     // Default: PROP layer, collides with everything
     cd.setCollisionGroups(groups(Layer.PROP, 0xffff));
 
-    this.collider = this.world.createCollider(cd, this.body);
+    this.collider = this.world.createCollider(cd, this.rb);
   }
 
   // ── collision group management ──────────────────────────────
@@ -73,9 +67,9 @@ export class Segment extends Entity {
   // ── sync ────────────────────────────────────────────────────
 
   sync() {
-    const t = this.body.translation();
+    const t = this.rb.translation();
     this.object.position.set(t.x, t.y, this.object.position.z);
-    this.object.rotation.z = this.body.rotation();
+    this.object.rotation.z = this.rb.rotation();
   }
 
   // ── private helpers ─────────────────────────────────────────
