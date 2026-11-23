@@ -1,9 +1,15 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier2d-compat';
-import type {Engine} from './engine';
+import type { Engine } from './engine';
 
-export const flat = (color: THREE.ColorRepresentation) => new THREE.MeshBasicMaterial({color});
+/** Shorthand for a flat-coloured MeshBasicMaterial. */
+export const flat = (color: THREE.ColorRepresentation) =>
+  new THREE.MeshBasicMaterial({ color });
 
+/**
+ * Base class for anything that lives in the Engine loop.
+ * Owns zero-or-more Rapier rigid bodies and auto-removes them on dispose.
+ */
 export abstract class Entity {
   readonly object = new THREE.Group();
   private ownedBodies: RAPIER.RigidBody[] = [];
@@ -18,13 +24,13 @@ export abstract class Entity {
     return body;
   }
 
-  //Physics loop
+  /** Called each physics tick (fixed timestep). */
   fixedUpdate(_dt: number): void {}
 
-  //Graphics sync up
+  /** Called each render frame — sync Three.js transforms from physics. */
   sync(): void {}
 
-  //delete
+  /** Remove all owned rigid bodies from the world. */
   dispose(): void {
     for (const b of this.ownedBodies) this.world.removeRigidBody(b);
     this.ownedBodies = [];

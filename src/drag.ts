@@ -1,0 +1,76 @@
+import RAPIER from '@dimforge/rapier2d-compat';
+import type { Engine } from './engine';
+
+/**
+ * Mouse-drag system.
+ *
+ * Click a dynamic body to grab it.  While held, a soft spring force
+ * pulls the body toward the cursor.  Release to let go.
+ */
+export class DragSystem {
+  private dragged: RAPIER.RigidBody | null = null;
+  private held = false;
+
+  /** Spring pull strength. */
+  stiffness = 20;
+  /** Velocity damping so the body doesn't overshoot. */
+  damping = 5;
+
+  constructor(private engine: Engine) {
+    const canvas = engine.canvas;
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      this.held = true;
+      this.grab();
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+      if (e.button !== 0) return;
+      this.held = false;
+      this.dragged = null;
+    });
+  }
+
+  // ── internals ───────────────────────────────────────────────
+
+  /** Find the first dynamic body under the cursor and store it. */
+  private grab() {
+    const { x, y } = this.engine.mouse;
+
+    this.engine.physics.world.intersectionsWithPoint(
+      { x, y },
+      (collider) => {
+        const body = collider.parent();
+        if (body && body.bodyType() === RAPIER.RigidBodyType.Dynamic) {
+          this.dragged = body;
+          return false; // stop enumeration
+        }
+        return true; // keep searching
+      },
+    );
+  }
+
+  /** Called each fixed-step to apply the spring force. */
+  applyForces(dt: number) {
+    if (!this.dragged || !this.held) {
+      this.dragged = null;
+      return;
+    }
+
+    // Guard against bodies that were removed mid-drag
+    if (!this.dragged.isValid()) {
+      this.dragged = null;
+      return;
+    }
+
+    const { x: mx, y: my } = this.engine.mouse;
+    const pos = this.dragged.translation();
+    const vel = this.dragged.linvel();
+
+    const fx = this.stiffness * (mx - pos.x) - this.damping * vel.x;
+    const fy = this.stiffness * (my - pos.y) - this.damping * vel.y;
+
+    this.dragged.applyImpulse({ x: fx * dt, y: fy * dt }, true);
+  }
+}

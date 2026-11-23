@@ -1,24 +1,71 @@
 import * as THREE from 'three';
-import {Engine} from './engine';
-import {Layer} from './physics';
-import {Ground} from './entities/ground';
-import {Snake} from './entities/snake';
-import {Ball} from './entities/ball';
-import {Star, starPoints} from './entities/star';
+import { Engine } from './engine';
+import { Ground } from './ground';
+import { Segment } from './segment';
+import { Creature } from './creature';
 
 async function main() {
   const engine = await Engine.create();
 
-  const bg = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshBasicMaterial({color: 0x262b33}));
+  // ── background ──────────────────────────────────────────────
+  const bg = new THREE.Mesh(
+    new THREE.PlaneGeometry(100, 100),
+    new THREE.MeshBasicMaterial({ color: 0x262b33 }),
+  );
   engine.scene.add(bg);
 
+  // ── ground ──────────────────────────────────────────────────
   engine.add(new Ground(engine, 0, -4, 20, 1));
-  engine.add(new Star(engine, starPoints(5, 2, 0.85), -4, 2));
 
-  const snake = engine.add(new Snake(engine, {x: 0, y: -1}));
-  const ball = engine.add(new Ball(engine, {x: 0, y: 0, radius: 0.6, density: 3, layer: Layer.SNAKE}));
-  snake.attachToTail(ball);
+  // ── demo creature: chain of circles ─────────────────────────
+  const creature = engine.addCreature(new Creature(engine));
 
+  const N       = 8;
+  const baseR   = 0.4;
+  const spacing = baseR * 1.6;
+  const palette = [
+    0x4ecdc4, 0x45b7aa, 0x3ca190, 0x338b76,
+    0x2a755c, 0x215f42, 0x184928, 0x10330e,
+  ];
+
+  let prev: Segment | null = null;
+  for (let i = 0; i < N; i++) {
+    const r = baseR * (1 - i * 0.04);           // taper slightly
+    const seg = engine.add(new Segment(engine, {
+      x: -i * spacing,
+      y: 0,
+      shape: { type: 'circle', radius: r },
+      color: palette[i % palette.length],
+    }));
+    creature.addSegment(seg);
+
+    if (prev) {
+      // anchor at the edge of each circle, toward each other
+      creature.connect(
+        prev, seg,
+        { x: -baseR * 0.8, y: 0 },
+        { x:  baseR * 0.8, y: 0 },
+      );
+    }
+    prev = seg;
+  }
+
+  // ── loose segments (not part of a creature) ─────────────────
+  // Rectangle
+  engine.add(new Segment(engine, {
+    x: 3, y: 2,
+    shape: { type: 'rect', width: 1.5, height: 0.6 },
+    color: 0xd9534f,
+  }));
+
+  // Triangle
+  engine.add(new Segment(engine, {
+    x: -3, y: 2,
+    shape: { type: 'polygon', vertices: [[0, 0.8], [-0.7, -0.4], [0.7, -0.4]] },
+    color: 0xf2991f,
+  }));
+
+  // ── go ──────────────────────────────────────────────────────
   engine.start();
 }
 
