@@ -35,6 +35,7 @@ export abstract class Entity implements Ticks {
 
   /** destroy all rigidbodies */
   dispose(): void {
+    this.object.clear();
     for (const b of this.ownedBodies) this.world.removeRigidBody(b);
     this.ownedBodies = [];
   }
