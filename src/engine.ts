@@ -6,6 +6,7 @@ const VIEW_HEIGHT = 10;
 const MAX_FRAME = 0.1; // avoid spiral of death after tab switch
 
 export class Engine {
+  //Engine has all the features I need.
   readonly canvas = document.getElementById('canvas') as HTMLCanvasElement;
   readonly renderer = new THREE.WebGLRenderer({canvas: this.canvas, antialias: true});
   readonly scene = new THREE.Scene();
