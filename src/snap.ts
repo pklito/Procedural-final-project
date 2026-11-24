@@ -9,12 +9,16 @@ export class SnapSystem implements UiTicks{
     dontTick: boolean = false;
 private static readonly MAX_LINK_DIST = 1000;
 private line : LinkLine;
+private connection : ConnectionResult;
 constructor(protected engine: Engine){
 
     this.line = new LinkLine(engine);
     this.engine.miscTicksUi.add(this);
 }
 
+private connect(){
+
+}
 private queryMouse(ignore : RAPIER.Collider | null): RAPIER.Collider | null {
   const { x, y } = this.engine.inputs.mouseWorld();
   let found = null as RAPIER.Collider | null;
@@ -50,19 +54,25 @@ private queryMouse(ignore : RAPIER.Collider | null): RAPIER.Collider | null {
     return a.contactCollider(b, SnapSystem.MAX_LINK_DIST);
   }
 
+  private noConnection(){
+    this.line.sync(null);
+    this.connection = null;
+  }
+
   update(dt: number): void {
-      if(this.isSnapping() && this.engine.drag.draggedRigidBody){
-        const newCollider = this.queryMouse(this.engine.drag.draggedRigidBody.collider(0));
-        if(!newCollider){
-            this.line.sync(null);
-            return;
-        }
-        const connection = this.getLink(this.engine.drag.draggedRigidBody, newCollider);
-        this.line.sync(connection);
-      }
-      else{
-        this.line.sync(null);
-      }
+    if(this.isSnapping() && this.engine.drag.draggedRigidBody){
+    const newCollider = this.queryMouse(this.engine.drag.draggedRigidBody.collider(0));
+    if(!newCollider){
+        this.noConnection();
+        return;
+    }
+    const connection = this.getLink(this.engine.drag.draggedRigidBody, newCollider);
+    this.line.sync(connection);
+    this.connection = connection;
+    }
+    else{
+    this.noConnection();
+    }
   }
 
   isSnapping():boolean{

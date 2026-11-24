@@ -8,9 +8,7 @@ export type ColliderShape =
   | { type: 'rect'; width: number; height: number }
   | { type: 'polygon'; vertices: [number, number][] };
 
-
-export const flat = (color: THREE.ColorRepresentation) =>
-  new THREE.MeshBasicMaterial({ color });
+export const flat = (color: THREE.ColorRepresentation) => new THREE.MeshBasicMaterial({ color });
 
 /**
  * object is a group of meshes to render.
@@ -19,26 +17,30 @@ export const flat = (color: THREE.ColorRepresentation) =>
  */
 export abstract class Entity implements Ticks {
   readonly graphics = new THREE.Group();
-  protected rb : RAPIER.RigidBody;
+  protected rb: RAPIER.RigidBody;
   protected collider: RAPIER.Collider;
   public dontTick: boolean = false;
 
   constructor(protected readonly engine: Engine) {}
 
-  protected get world() { return this.engine.physics.world; }
-  get rigidBody() {return this.rb;}
+  protected get world() {
+    return this.engine.physics.world;
+  }
+  get rigidBody() {
+    return this.rb;
+  }
   protected createRigidBody(desc: RAPIER.RigidBodyDesc) {
     const body = this.world.createRigidBody(desc);
     body.userData = this;
     this.rb = body;
   }
 
-  protected createCollider(desc: RAPIER.ColliderDesc, rbdesc : RAPIER.RigidBodyDesc | null = null){
-    if(rbdesc){
+  protected createCollider(desc: RAPIER.ColliderDesc, rbdesc: RAPIER.RigidBodyDesc | null = null) {
+    if (rbdesc) {
       this.createRigidBody(rbdesc);
     }
-    if(!this.rb){
-      throw new Error("RigidBody not initialized yet!");
+    if (!this.rb) {
+      throw new Error('RigidBody not initialized yet!');
     }
     this.collider = this.world.createCollider(desc, this.rb);
   }
@@ -48,7 +50,7 @@ export abstract class Entity implements Ticks {
   }
 
   /** Add a THREE.Object3D to the current graphics of this object. */
-  protected addMesh(mesh: THREE.Object3D){
+  protected addMesh(mesh: THREE.Object3D) {
     this.graphics.add(mesh);
   }
 
@@ -61,7 +63,7 @@ export abstract class Entity implements Ticks {
 
   /** syncs 3js visuals to physics */
   sync() {
-    if(this.dontTick){
+    if (this.dontTick) {
       return;
     }
     const t = this.rb.translation();
@@ -73,28 +75,20 @@ export abstract class Entity implements Ticks {
   dispose(): void {
     this.dontTick = true;
     this.graphics!.clear();
-    if(this.rb){
+    if (this.rb) {
       this.world.removeRigidBody(this.rb);
       this.rb = null;
     }
   }
 
-  
-
-  protected static buildMesh(
-    shape: ColliderShape,
-    color: THREE.ColorRepresentation,
-  ): THREE.Mesh {
+  protected static buildMesh(shape: ColliderShape, color: THREE.ColorRepresentation): THREE.Mesh {
     switch (shape.type) {
       case 'circle':
-        return new THREE.Mesh(
-          new THREE.CircleGeometry(shape.radius, 32), flat(color));
+        return new THREE.Mesh(new THREE.CircleGeometry(shape.radius, 32), flat(color));
       case 'rect':
-        return new THREE.Mesh(
-          new THREE.PlaneGeometry(shape.width, shape.height), flat(color));
+        return new THREE.Mesh(new THREE.PlaneGeometry(shape.width, shape.height), flat(color));
       case 'polygon': {
-        const s = new THREE.Shape(
-          shape.vertices.map(([x, y]) => new THREE.Vector2(x, y)));
+        const s = new THREE.Shape(shape.vertices.map(([x, y]) => new THREE.Vector2(x, y)));
         return new THREE.Mesh(new THREE.ShapeGeometry(s), flat(color));
       }
     }

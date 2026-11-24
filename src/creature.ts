@@ -17,7 +17,7 @@ export interface CreatureJoint {
  * removeSegment(Segment) - re-enables collisions and disconnects all joints.
  * connect(Segment, Segment, Pos1, Pos2, angle) - connect two segments in creature
  * update(dt) - called on loop, applies the torques rn
- * dispose() - destroy 
+ * dispose() - destroy
  */
 export class Creature implements Ticks {
   public dontTick: boolean = false;
@@ -26,7 +26,7 @@ export class Creature implements Ticks {
   readonly collisionBit: number;
 
   straightenStiffness = 3.0;
-  straightenDamping   = 0.5;
+  straightenDamping = 0.5;
 
   constructor(private engine: Engine) {
     this.collisionBit = engine.physics.allocateCreatureGroup();
@@ -42,7 +42,7 @@ export class Creature implements Ticks {
   removeSegment(seg: Segment) {
     this.segments.delete(seg);
     seg.creature = null;
-    
+
     seg.setCollisionGroup(Layer.PROP, 0xffff);
 
     for (let i = this.joints.length - 1; i >= 0; i--) {
@@ -53,11 +53,7 @@ export class Creature implements Ticks {
       }
     }
   }
-  connect(
-    a: Segment, b: Segment,
-    anchorA: Vec2, anchorB: Vec2,
-    targetAngle = 0,
-  ): CreatureJoint {
+  connect(a: Segment, b: Segment, anchorA: Vec2, anchorB: Vec2, targetAngle = 0): CreatureJoint {
     const joint = this.engine.physics.revolute(a.rigidBody, b.rigidBody, anchorA, anchorB);
     const cj: CreatureJoint = { joint, segA: a, segB: b, targetAngle };
     this.joints.push(cj);
@@ -65,20 +61,18 @@ export class Creature implements Ticks {
   }
 
   fixedUpdate(dt: number) {
-    if(this.dontTick)
-      return;
+    if (this.dontTick) return;
     for (const { segA, segB, targetAngle } of this.joints) {
       const relAngle = segB.rigidBody.rotation() - segA.rigidBody.rotation();
-      const error    = targetAngle - relAngle;
+      const error = targetAngle - relAngle;
 
       const normErr = Math.atan2(Math.sin(error), Math.cos(error));
-      const relVel  = segB.rigidBody.angvel() - segA.rigidBody.angvel();
+      const relVel = segB.rigidBody.angvel() - segA.rigidBody.angvel();
 
-      const torque =
-        (this.straightenStiffness * normErr - this.straightenDamping * relVel) * dt;
+      const torque = (this.straightenStiffness * normErr - this.straightenDamping * relVel) * dt;
 
       segA.rigidBody.applyTorqueImpulse(-torque, true);
-      segB.rigidBody.applyTorqueImpulse( torque, true);
+      segB.rigidBody.applyTorqueImpulse(torque, true);
     }
   }
 

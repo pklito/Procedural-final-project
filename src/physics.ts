@@ -6,7 +6,7 @@ export type Vec2 = { x: number; y: number };
 
 export const Layer = {
   GROUND: 0x0001,
-  PROP:   0x0002,
+  PROP: 0x0002,
   // Bits 0x0004 … 0x8000 are dynamically allocated for creature groups
 } as const;
 
@@ -33,7 +33,7 @@ export class Physics {
   }
 
   /** Allocate a unique collision-group bit for a new creature (up to 14 creatures). */
-  
+
   allocateCreatureGroup(): number {
     if (this.nextCreatureBit > 15)
       throw new Error('No more creature collision-group bits available (max 14)');
@@ -44,24 +44,36 @@ export class Physics {
 
   castRay(origin: Vec2, dir: Vec2, maxDist: number, filterGroups?: number): number | null {
     const hit = this.world.castRay(
-      new RAPIER.Ray(origin, dir), maxDist, true, undefined, filterGroups);
+      new RAPIER.Ray(origin, dir),
+      maxDist,
+      true,
+      undefined,
+      filterGroups,
+    );
     return hit ? hit.timeOfImpact : null;
   }
 
   // joint builders
 
   revolute(a: RAPIER.RigidBody, b: RAPIER.RigidBody, anchorA: Vec2, anchorB: Vec2) {
-    return this.world.createImpulseJoint(
-      RAPIER.JointData.revolute(anchorA, anchorB), a, b, true);
+    return this.world.createImpulseJoint(RAPIER.JointData.revolute(anchorA, anchorB), a, b, true);
   }
 
   spring(
-    a: RAPIER.RigidBody, b: RAPIER.RigidBody,
-    rest: number, stiffness: number, damping: number,
-    anchorA: Vec2 = { x: 0, y: 0 }, anchorB: Vec2 = { x: 0, y: 0 },
+    a: RAPIER.RigidBody,
+    b: RAPIER.RigidBody,
+    rest: number,
+    stiffness: number,
+    damping: number,
+    anchorA: Vec2 = { x: 0, y: 0 },
+    anchorB: Vec2 = { x: 0, y: 0 },
   ) {
     return this.world.createImpulseJoint(
-      RAPIER.JointData.spring(rest, stiffness, damping, anchorA, anchorB), a, b, true);
+      RAPIER.JointData.spring(rest, stiffness, damping, anchorA, anchorB),
+      a,
+      b,
+      true,
+    );
   }
 
   removeJoint(joint: RAPIER.ImpulseJoint) {

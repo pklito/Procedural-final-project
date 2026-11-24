@@ -6,18 +6,27 @@ import type { Creature } from './creature';
 import { InputManager } from './inputs';
 import { SnapSystem } from './snap';
 
-export interface Ticks {fixedUpdate(dt: number):void; dontTick : boolean}
-export interface UiTicks {update(dt: number):void; dontTick : boolean}
+export interface Ticks {
+  fixedUpdate(dt: number): void;
+  dontTick: boolean;
+}
+export interface UiTicks {
+  update(dt: number): void;
+  dontTick: boolean;
+}
 
 const VIEW_HEIGHT = 10;
-const MAX_FRAME  = 0.1; // cap to avoid spiral-of-death after tab switch
+const MAX_FRAME = 0.1; // cap to avoid spiral-of-death after tab switch
 
 export class Engine {
   // 3JS components
-  readonly canvas   = document.getElementById('canvas') as HTMLCanvasElement;
-  readonly renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
-  readonly scene    = new THREE.Scene();
-  readonly camera   = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
+  readonly canvas = document.getElementById('canvas') as HTMLCanvasElement;
+  readonly renderer = new THREE.WebGLRenderer({
+    canvas: this.canvas,
+    antialias: true,
+  });
+  readonly scene = new THREE.Scene();
+  readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 
   // Drag subsystem
   readonly snap: SnapSystem;
@@ -25,8 +34,8 @@ export class Engine {
   readonly inputs: InputManager;
 
   // engine stuff
-  private readonly clock     = new THREE.Clock();
-  private readonly entities  = new Set<Entity>();
+  private readonly clock = new THREE.Clock();
+  private readonly entities = new Set<Entity>();
   private readonly creatures = new Set<Creature>();
   readonly miscTicks = new Set<Ticks>();
   readonly miscTicksUi = new Set<UiTicks>();
@@ -77,10 +86,10 @@ export class Engine {
   //window
   resize() {
     const aspect = window.innerWidth / window.innerHeight;
-    this.camera.left   = (-VIEW_HEIGHT * aspect) / 2;
-    this.camera.right  = ( VIEW_HEIGHT * aspect) / 2;
-    this.camera.top    =   VIEW_HEIGHT / 2;
-    this.camera.bottom =  -VIEW_HEIGHT / 2;
+    this.camera.left = (-VIEW_HEIGHT * aspect) / 2;
+    this.camera.right = (VIEW_HEIGHT * aspect) / 2;
+    this.camera.top = VIEW_HEIGHT / 2;
+    this.camera.bottom = -VIEW_HEIGHT / 2;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
@@ -106,13 +115,12 @@ export class Engine {
       this.updateDebug();
       this.renderer.render(this.scene, this.camera);
 
-      if(this.inputs.justPressed('p')){
+      if (this.inputs.justPressed('p')) {
         this.toggleDebug();
       }
 
       for (const u of this.miscTicksUi) u.update(dt);
       this.inputs.frameTick();
-
     });
   }
 
@@ -133,13 +141,12 @@ export class Engine {
 
   private updateDebug() {
     if (!this.debug) return;
-    const v   = this.physics.world.debugRender().vertices;
+    const v = this.physics.world.debugRender().vertices;
     const pos = new Float32Array((v.length / 2) * 3);
     for (let i = 0, j = 0; i < v.length; i += 2, j += 3) {
-      pos[j]     = v[i];
+      pos[j] = v[i];
       pos[j + 1] = v[i + 1];
     }
-    this.debug.geometry.setAttribute(
-      'position', new THREE.BufferAttribute(pos, 3));
+    this.debug.geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   }
 }
