@@ -6,6 +6,7 @@ import type { Creature } from './creature';
 import { InputManager } from './inputs';
 
 export interface Ticks {fixedUpdate(dt: number):void; dontTick : boolean}
+export interface UiTicks {update(dt: number):void; dontTick : boolean}
 
 const VIEW_HEIGHT = 10;
 const MAX_FRAME  = 0.1; // cap to avoid spiral-of-death after tab switch
@@ -25,6 +26,8 @@ export class Engine {
   private readonly clock     = new THREE.Clock();
   private readonly entities  = new Set<Entity>();
   private readonly creatures = new Set<Creature>();
+  readonly miscTicks = new Set<Ticks>();
+  readonly miscTicksUi = new Set<UiTicks>();
   private accumulator = 0;
   private debug?: THREE.LineSegments;
 
@@ -82,10 +85,12 @@ export class Engine {
   //physics loop
   start() {
     this.renderer.setAnimationLoop(() => {
-      this.accumulator += Math.min(this.clock.getDelta(), MAX_FRAME);
+      const dt = this.clock.getDelta();
+      this.accumulator += Math.min(dt, MAX_FRAME);
 
       // Fixed-rate physics ticks
       while (this.accumulator >= FIXED_DT) {
+        for (const t of this.miscTicks) t.fixedUpdate(FIXED_DT);
         for (const e of this.entities) e.fixedUpdate(FIXED_DT);
         for (const c of this.creatures) c.fixedUpdate(FIXED_DT);
         this.drag.fixedUpdate(FIXED_DT);
@@ -101,6 +106,8 @@ export class Engine {
       if(this.inputs.justPressed('p')){
         this.toggleDebug();
       }
+
+      for (const u of this.miscTicksUi) u.update(dt);
       this.inputs.frameTick();
 
     });
