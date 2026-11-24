@@ -34,7 +34,7 @@ export class SnapSystem implements UiTicks {
       creature = b.creature;
       segment = a;
     }
-    if (!a.creature) {
+    if (!creature) {
       console.error('No creatures!');
       return;
     }
