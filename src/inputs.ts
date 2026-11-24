@@ -4,8 +4,29 @@ import { Engine } from "./engine";
 
 export class InputManager{
     private mouse = new Vector3();
-    private keysHeld: Set<string>;
-    private keysJustPressed: Set<string>;
+    private keysHeld: Set<string> = new Set<string>();
+    private keysJustPressed: Set<string> = new Set<string>();
+    private keysJustReleased: Set<string> = new Set<string>();
+
+    justPressed(e:string):boolean{
+        return this.keysJustPressed.has(e);
+    }
+    down(e:string):boolean{
+        return this.keysHeld.has(e);
+    }
+    justReleased(e:string):boolean{
+        return this.keysJustReleased.has(e);
+
+    }
+    mouseWorld():Vector3{
+        return this.mouse;
+    }
+
+    frameTick(){
+        this.keysJustPressed.clear();
+        this.keysJustReleased.clear();
+    }
+
     constructor(private engine: Engine){
         this.engine.canvas.addEventListener('mousemove', (e) => {
         this.mouse
@@ -26,6 +47,8 @@ export class InputManager{
 
         window.addEventListener('keyup', (e) => {
             this.keysHeld.delete(e.key.toLowerCase());
+            this.keysJustReleased.add(e.key.toLowerCase());
+
         });
 
         this.engine.canvas.addEventListener('mousedown', (e) => {
@@ -38,10 +61,9 @@ export class InputManager{
         
         this.engine.canvas.addEventListener('mouseup', (e) => {
             this.keysHeld.delete('mouse');
+            this.keysJustReleased.add('mouse');
             
         })
         
     }
-
-
 }

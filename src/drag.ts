@@ -33,7 +33,7 @@ export class DragSystem implements Ticks{
 
   /** Find the first dynamic body under the cursor and store it. */
   private grab() {
-    const { x, y } = this.engine.mouse;
+    const { x, y } = this.engine.inputs.mouseWorld();
 
     this.engine.physics.world.intersectionsWithPoint(
       { x, y },
@@ -61,7 +61,7 @@ export class DragSystem implements Ticks{
       return;
     }
 
-    const { x: mx, y: my } = this.engine.mouse;
+    const { x: mx, y: my } = this.engine.inputs.mouseWorld();
     const pos = this.dragged.translation();
     const vel = this.dragged.linvel();
 

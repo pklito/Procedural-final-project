@@ -39,9 +39,6 @@ export class Engine {
     this.camera.position.z = 10;
 
     window.addEventListener('resize', () => this.resize());
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'KeyP') this.toggleDebug();
-    });
 
     this.drag = new DragSystem(this);
     this.resize();
@@ -100,6 +97,12 @@ export class Engine {
       for (const e of this.entities) e.sync();
       this.updateDebug();
       this.renderer.render(this.scene, this.camera);
+
+      if(this.inputs.justPressed('p')){
+        this.toggleDebug();
+      }
+      this.inputs.frameTick();
+
     });
   }
 
