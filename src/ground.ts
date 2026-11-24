@@ -15,17 +15,21 @@ export class Ground extends Entity {
 
     const mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(width, height), flat(color));
-    mesh.position.set(x, y, 0.05);
-
+    mesh.position.set(0, 0, 0.05);
+    this.dontTick=true;
     this.addMesh(mesh);
-    const body = this.addBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x, y));
-
-    this.world.createCollider(
-      RAPIER.ColliderDesc.cuboid(width / 2, height / 2)
-        .setCollisionGroups(groups(Layer.GROUND, 0xffff)),
-      body,
-    );
+    this.graphics.position.set(x, y, 0);
+    this.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x, y));
+    this.createCollider(RAPIER.ColliderDesc.cuboid(width / 2, height / 2)
+        .setCollisionGroups(groups(Layer.GROUND, 0xffff)));
   }
   
+  lifeTime = 0;
+  fixedUpdate(_dt: number): void {
+    this.lifeTime += _dt;
+    if(this.lifeTime > 2){
+      this.dispose();
+    }
+  }
   
 }

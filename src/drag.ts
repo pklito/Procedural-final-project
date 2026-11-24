@@ -11,9 +11,7 @@ export class DragSystem implements Ticks{
   private dragged: RAPIER.RigidBody | null = null;
   private held = false;
 
-  /** Spring pull strength. */
   stiffness = 20;
-  /** Velocity damping so the body doesn't overshoot. */
   damping = 5;
 
   constructor(private engine: Engine) {

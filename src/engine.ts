@@ -4,7 +4,7 @@ import { DragSystem } from './drag';
 import type { Entity } from './entity';
 import type { Creature } from './creature';
 
-export interface Ticks {fixedUpdate(dt: number):void;}
+export interface Ticks {fixedUpdate(dt: number):void; dontTick : boolean}
 
 const VIEW_HEIGHT = 10;
 const MAX_FRAME  = 0.1; // cap to avoid spiral-of-death after tab switch
@@ -59,13 +59,13 @@ export class Engine {
   //Entity
   add<T extends Entity>(entity: T): T {
     this.entities.add(entity);
-    this.scene.add(entity.object);
+    this.scene.add(entity.graphics);
     return entity;
   }
 
   remove(entity: Entity) {
     if (!this.entities.delete(entity)) return;
-    this.scene.remove(entity.object);
+    this.scene.remove(entity.graphics);
     entity.dispose();
   }
 

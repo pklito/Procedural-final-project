@@ -57,7 +57,7 @@ export class Creature implements Ticks {
     anchorA: Vec2, anchorB: Vec2,
     targetAngle = 0,
   ): CreatureJoint {
-    const joint = this.engine.physics.revolute(a.rb, b.rb, anchorA, anchorB);
+    const joint = this.engine.physics.revolute(a.rigidBody, b.rigidBody, anchorA, anchorB);
     const cj: CreatureJoint = { joint, segA: a, segB: b, targetAngle };
     this.joints.push(cj);
     return cj;
@@ -65,17 +65,17 @@ export class Creature implements Ticks {
 
   fixedUpdate(dt: number) {
     for (const { segA, segB, targetAngle } of this.joints) {
-      const relAngle = segB.rb.rotation() - segA.rb.rotation();
+      const relAngle = segB.rigidBody.rotation() - segA.rigidBody.rotation();
       const error    = targetAngle - relAngle;
 
       const normErr = Math.atan2(Math.sin(error), Math.cos(error));
-      const relVel  = segB.rb.angvel() - segA.rb.angvel();
+      const relVel  = segB.rigidBody.angvel() - segA.rigidBody.angvel();
 
       const torque =
         (this.straightenStiffness * normErr - this.straightenDamping * relVel) * dt;
 
-      segA.rb.applyTorqueImpulse(-torque, true);
-      segB.rb.applyTorqueImpulse( torque, true);
+      segA.rigidBody.applyTorqueImpulse(-torque, true);
+      segB.rigidBody.applyTorqueImpulse( torque, true);
     }
   }
 
