@@ -82,11 +82,12 @@ export class DragSystem implements Ticks {
     const { x: mx, y: my } = this.dragPosition;
     const pos = this.dragged.translation();
     const vel = this.dragged.linvel();
+    const mass = this.dragged.mass();
 
     const fx = this.stiffness * (mx - pos.x) - this.damping * vel.x;
     const fy = this.stiffness * (my - pos.y) - this.damping * vel.y;
 
-    this.dragged.applyImpulse({ x: fx * dt, y: fy * dt }, true);
+    this.dragged.applyImpulse({ x: fx * mass * dt, y: fy * mass * dt }, true);
     if (this.engine.inputs.down('q')) {
       this.dragged.applyTorqueImpulse(this.torque * dt, true);
     }
