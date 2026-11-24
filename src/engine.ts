@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { Physics, FIXED_DT } from './physics';
-import { DragSystem, ShakeSystem } from './drag';
+import { DragSystem, ShakeSystem } from './systems/drag';
 import type { Entity } from './entity';
 import type { Creature } from './creature';
 import { InputManager } from './inputs';
-import { SnapSystem } from './snap';
+import { SnapSystem } from './systems/snap';
 import { Segment } from './segment';
 
 export interface Ticks {

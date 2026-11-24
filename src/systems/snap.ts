@@ -1,7 +1,7 @@
 import RAPIER, { RigidBody } from '@dimforge/rapier2d-compat';
-import type { Engine, Ticks, UiTicks } from './engine';
+import type { Engine, Ticks, UiTicks } from '../engine';
 import { Vector3 } from 'three';
-import { Vec2, worldToLocal } from './physics';
+import { Vec2, worldToLocal } from '../physics';
 
 type ConnectionResult = { a: Vec2; b: Vec2; collA: RAPIER.Collider; collB: RAPIER.Collider };
 
@@ -141,9 +141,9 @@ export class SnapSystem implements UiTicks {
 //Visuals:
 
 import * as THREE from 'three';
-import { Entity } from './entity';
-import { Segment } from './segment';
-import { Creature } from './creature';
+import { Entity } from '../entity';
+import { Segment } from '../segment';
+import { Creature } from '../creature';
 
 export class LinkLine {
   public dontTick = false;

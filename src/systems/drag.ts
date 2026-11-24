@@ -1,8 +1,8 @@
 import RAPIER from '@dimforge/rapier2d-compat';
-import type { Engine, Ticks, UiTicks } from './engine';
+import type { Engine, Ticks, UiTicks } from '../engine';
 import { Vector3 } from 'three';
-import { Vec2 } from './physics';
-import { Entity } from './entity';
+import { Vec2 } from '../physics';
+import { Entity } from '../entity';
 
 /**
  * Mouse-drag system.
