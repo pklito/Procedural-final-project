@@ -17,11 +17,7 @@ export function spawnRandomSegment(engine: Engine, position: Vec2) {
     const s = rand(0.4, 1.2);
     shape = {
       type: 'polygon',
-      vertices: [
-        [0, s],
-        [-s * 0.9, -s * 0.5],
-        [s * 0.9, -s * 0.5],
-      ],
+      vertices: softTurbulence(catmulClark(randomRemove(startingShape(1), 0.3), 0.6)),
     };
   }
 
