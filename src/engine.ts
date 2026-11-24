@@ -3,6 +3,7 @@ import { Physics, FIXED_DT } from './physics';
 import { DragSystem } from './drag';
 import type { Entity } from './entity';
 import type { Creature } from './creature';
+import { InputManager } from './inputs';
 
 export interface Ticks {fixedUpdate(dt: number):void; dontTick : boolean}
 
@@ -15,10 +16,10 @@ export class Engine {
   readonly renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
   readonly scene    = new THREE.Scene();
   readonly camera   = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
-  readonly mouse    = new THREE.Vector3();
 
   // Drag subsystem
   readonly drag: DragSystem;
+  readonly inputs: InputManager;
 
   // engine stuff
   private readonly clock     = new THREE.Clock();
@@ -32,20 +33,10 @@ export class Engine {
   }
 
   private constructor(readonly physics: Physics) {
+    this.inputs = new InputManager(this);
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setClearColor(0x1a1c1f);
     this.camera.position.z = 10;
-
-    // Mouse position world space
-    this.canvas.addEventListener('mousemove', (e) => {
-      this.mouse
-        .set(
-          (e.clientX / window.innerWidth)  *  2 - 1,
-          -(e.clientY / window.innerHeight) * 2 + 1,
-          0,
-        )
-        .unproject(this.camera);
-    });
 
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('keydown', (e) => {
