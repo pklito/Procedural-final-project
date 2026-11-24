@@ -8,6 +8,7 @@ import type { Engine, Ticks } from './engine';
  * pulls the body toward the cursor.  Release to let go.
  */
 export class DragSystem implements Ticks{
+  public dontTick: boolean;
   private dragged: RAPIER.RigidBody | null = null;
   private held = false;
 

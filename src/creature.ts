@@ -20,6 +20,7 @@ export interface CreatureJoint {
  * dispose() - destroy 
  */
 export class Creature implements Ticks {
+  public dontTick: boolean = false;
   readonly segments = new Set<Segment>();
   readonly joints: CreatureJoint[] = [];
   readonly collisionBit: number;
@@ -64,6 +65,8 @@ export class Creature implements Ticks {
   }
 
   fixedUpdate(dt: number) {
+    if(this.dontTick)
+      return;
     for (const { segA, segB, targetAngle } of this.joints) {
       const relAngle = segB.rigidBody.rotation() - segA.rigidBody.rotation();
       const error    = targetAngle - relAngle;
