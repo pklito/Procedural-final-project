@@ -55,25 +55,36 @@ export class SnapSystem implements UiTicks {
 
     return found;
   }
-  /**a is a rigidBody (several colliders) b is one collider.*/
-  getLink(a: RAPIER.RigidBody, b: RAPIER.Collider): ConnectionResult | null {
-    let best: RAPIER.ShapeContact | null = null;
-    let best_i: number;
-    for (let i = 0; i < a.numColliders(); i++) {
-      const contact = a.collider(i).contactCollider(b, SnapSystem.MAX_LINK_DIST);
-      if (contact && (!best || contact.distance < best.distance)) {
-        best = contact;
-        best_i = i;
-      }
+  
+  private static readonly INSET = 0.2; // world units pushed into each segment
+
+getLink(a: RAPIER.RigidBody, b: RAPIER.Collider): ConnectionResult | null {
+  let best: RAPIER.ShapeContact | null = null;
+  let best_i = -1;
+  for (let i = 0; i < a.numColliders(); i++) {
+    const contact = a.collider(i).contactCollider(b, SnapSystem.MAX_LINK_DIST);
+    if (contact && (!best || contact.distance < best.distance)) {
+      best = contact;
+      best_i = i;
     }
-    if (!best) return null;
-    return {
-      a: { x: best.point1.x, y: best.point1.y },
-      b: { x: best.point2.x, y: best.point2.y },
-      collA: a.collider(best_i),
-      collB: b,
-    };
   }
+  if (!best) return null;
+
+  const d = SnapSystem.INSET;
+  return {
+    // surface point, pushed inward (against the outward normal)
+    a: {
+      x: best.point1.x - best.normal1.x * d,
+      y: best.point1.y - best.normal1.y * d,
+    },
+    b: {
+      x: best.point2.x - best.normal2.x * d,
+      y: best.point2.y - best.normal2.y * d,
+    },
+    collA: a.collider(best_i),
+    collB: b,
+  };
+}
   getSingleLink(a: RAPIER.Collider, b: RAPIER.Collider): RAPIER.ShapeContact | null {
     return a.contactCollider(b, SnapSystem.MAX_LINK_DIST);
   }
