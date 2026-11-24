@@ -39,7 +39,12 @@ export class SnapSystem implements UiTicks {
       return;
     }
     creature.addSegment(segment);
-    creature.connect(a, b, worldToLocal(a.rigidBody, this.connection.a), worldToLocal(b.rigidBody,this.connection.b));
+    creature.connect(
+      a,
+      b,
+      worldToLocal(a.rigidBody, this.connection.a),
+      worldToLocal(b.rigidBody, this.connection.b),
+    );
   }
   private queryMouse(ignore: RAPIER.Collider | null): RAPIER.Collider | null {
     const { x, y } = this.engine.inputs.mouseWorld();
@@ -55,36 +60,50 @@ export class SnapSystem implements UiTicks {
 
     return found;
   }
-  
-  private static readonly INSET = 0.2; // world units pushed into each segment
 
-getLink(a: RAPIER.RigidBody, b: RAPIER.Collider): ConnectionResult | null {
-  let best: RAPIER.ShapeContact | null = null;
-  let best_i = -1;
-  for (let i = 0; i < a.numColliders(); i++) {
-    const contact = a.collider(i).contactCollider(b, SnapSystem.MAX_LINK_DIST);
-    if (contact && (!best || contact.distance < best.distance)) {
-      best = contact;
-      best_i = i;
+  private static readonly INSET = 0.2;
+  getLink(a: RAPIER.RigidBody, b: RAPIER.Collider): ConnectionResult | null {
+    const m = this.engine.inputs.mouseWorld();
+    const mouse = { x: m.x, y: m.y };
+
+    let bestDist = Infinity;
+    let bestIdx = -1;
+    let bestPoint: Vec2 | null = null;
+    let bestInside = false;
+
+    for (let i = 0; i < a.numColliders(); i++) {
+      const proj = a.collider(i).projectPoint(mouse, false);
+      const dist = Math.hypot(proj.point.x - mouse.x, proj.point.y - mouse.y);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = i;
+        bestPoint = { x: proj.point.x, y: proj.point.y };
+        bestInside = proj.isInside;
+      }
     }
-  }
-  if (!best) return null;
+    if (!bestPoint) return null;
 
-  const d = SnapSystem.INSET;
-  return {
-    // surface point, pushed inward (against the outward normal)
-    a: {
-      x: best.point1.x - best.normal1.x * d,
-      y: best.point1.y - best.normal1.y * d,
-    },
-    b: {
-      x: best.point2.x - best.normal2.x * d,
-      y: best.point2.y - best.normal2.y * d,
-    },
-    collA: a.collider(best_i),
-    collB: b,
-  };
-}
+    let nx = bestInside ? bestPoint.x - mouse.x : mouse.x - bestPoint.x;
+    let ny = bestInside ? bestPoint.y - mouse.y : mouse.y - bestPoint.y;
+    let len = Math.hypot(nx, ny);
+
+    if (len < 1e-6) {
+      const c = a.translation();
+      nx = bestPoint.x - c.x;
+      ny = bestPoint.y - c.y;
+      len = Math.hypot(nx, ny) || 1;
+    }
+    nx /= len;
+    ny /= len;
+
+    const d = SnapSystem.INSET;
+    return {
+      a: { x: bestPoint.x - nx * d, y: bestPoint.y - ny * d },
+      b: mouse,
+      collA: a.collider(bestIdx),
+      collB: b,
+    };
+  }
   getSingleLink(a: RAPIER.Collider, b: RAPIER.Collider): RAPIER.ShapeContact | null {
     return a.contactCollider(b, SnapSystem.MAX_LINK_DIST);
   }

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Physics, FIXED_DT } from './physics';
-import { DragSystem } from './drag';
+import { DragSystem, ShakeSystem } from './drag';
 import type { Entity } from './entity';
 import type { Creature } from './creature';
 import { InputManager } from './inputs';
@@ -33,6 +33,7 @@ export class Engine {
   // Drag subsystem
   readonly snap: SnapSystem;
   readonly drag: DragSystem;
+  readonly shake: ShakeSystem;
   readonly inputs: InputManager;
 
   // engine stuff
@@ -58,6 +59,7 @@ export class Engine {
 
     this.drag = new DragSystem(this);
     this.snap = new SnapSystem(this);
+    this.shake = new ShakeSystem(this);
     this.resize();
   }
 
@@ -68,10 +70,15 @@ export class Engine {
     return entity;
   }
 
-  remove(entity: Entity) {
-    if (!this.entities.delete(entity)) return;
+  remove(entity: Entity) : boolean {
+    if (entity instanceof Segment && entity.creature){
+      console.warn("Cannot destroy segments of a creature yet TODO");
+      return false;
+    }
+    if (!this.entities.delete(entity)) return false;
     this.scene.remove(entity.graphics);
     entity.dispose();
+    return true;
   }
 
   //Creature
@@ -108,12 +115,10 @@ export class Engine {
         for (const e of this.entities) e.fixedUpdate(FIXED_DT);
         for (const c of this.creatures) c.fixedUpdate(FIXED_DT);
 
-        for (const e of this.entities) if(e.rigidBody.translation().y < this.KILL_FLOOR && !(e instanceof Segment && e.creature)){
-          this.entities.delete(e);
-          console.log("Destroyed", e);
-          e.dispose();
-        }
-        this.drag.fixedUpdate(FIXED_DT);
+        for (const e of this.entities)
+          if (e.rigidBody.translation().y < this.KILL_FLOOR){
+            this.remove(e);
+          }
         this.physics.step();
         this.accumulator -= FIXED_DT;
       }
