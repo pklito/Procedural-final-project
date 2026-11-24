@@ -4,6 +4,7 @@ import { DragSystem } from './drag';
 import type { Entity } from './entity';
 import type { Creature } from './creature';
 import { InputManager } from './inputs';
+import { SnapSystem } from './snap';
 
 export interface Ticks {fixedUpdate(dt: number):void; dontTick : boolean}
 export interface UiTicks {update(dt: number):void; dontTick : boolean}
@@ -19,6 +20,7 @@ export class Engine {
   readonly camera   = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 
   // Drag subsystem
+  readonly snap: SnapSystem;
   readonly drag: DragSystem;
   readonly inputs: InputManager;
 
@@ -44,6 +46,7 @@ export class Engine {
     window.addEventListener('resize', () => this.resize());
 
     this.drag = new DragSystem(this);
+    this.snap = new SnapSystem(this);
     this.resize();
   }
 

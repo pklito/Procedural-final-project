@@ -71,7 +71,6 @@ init(){
       shape: { type: 'polygon', vertices: [[0, 0.8], [-0.7, -0.4], [0.7, -0.4]] },
       color: 0xf2991f,
     }));
-
   }
 
   public update(dt: number){

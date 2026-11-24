@@ -33,6 +33,9 @@ export class DragSystem implements Ticks{
       this.dragged = null;
     });
   }
+
+  get draggedRigidBody() :RAPIER.RigidBody | null {return this.dragged};
+
   public tryGrab(body: RAPIER.RigidBody){
     if(this.held && !(this.dragged && this.dragged.isValid())){
       this.dragged = body;
@@ -68,7 +71,7 @@ export class DragSystem implements Ticks{
       return;
     }
 
-    if(!this.engine.inputs.down('c') && !this.engine.inputs.down('shift')){
+    if(!this.engine.snap.isSnapping()){
      this.dragPosition.x = this.engine.inputs.mouseWorld().x; 
      this.dragPosition.y = this.engine.inputs.mouseWorld().y; 
      this.dragPosition.z = this.engine.inputs.mouseWorld().z; 
