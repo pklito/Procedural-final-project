@@ -62,9 +62,11 @@ Im still some ways away from where I want the engine to be, I've finally managed
 <img width="507" height="393" alt="image" src="https://github.com/user-attachments/assets/727fb6c5-f677-49f3-a39d-d4c4f7e04fc5" />
 I have a codebase that has creatures that are made up of links of segments, and I can drag segments around, and connect them to the creature.
 Segments can also be generated randomly, currently it's just simple shaped primitives.
-It hasn't all gone exactly as I thought:
-https://github.com/user-attachments/assets/f41c8d30-32cf-4d52-a298-2886c5275722
-This all being said I've hardly grazed the procedural part of the project so I'd say im still a good portion away from where I want to be with the project.
+It hasn't all gone exactly as I thought:     
+
+https://github.com/user-attachments/assets/f41c8d30-32cf-4d52-a298-2886c5275722  
+
+This all being said I've hardly grazed the procedural part of the project so I'd say im still a good portion away from where I want to be with the project. Now that I feel more comfortable with the code I hope I can add the features I want this week.
 
 ## Final submission (due 11/30)
 Time to polish! Spen this last week of your project using your generator to produce beautiful output. Add textures, tune parameters, play with colors, play with camera animation. Take the feedback from class critques and use it to take your project to the next level.
