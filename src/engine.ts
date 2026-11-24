@@ -5,6 +5,7 @@ import type { Entity } from './entity';
 import type { Creature } from './creature';
 import { InputManager } from './inputs';
 import { SnapSystem } from './snap';
+import { Segment } from './segment';
 
 export interface Ticks {
   fixedUpdate(dt: number): void;
@@ -27,6 +28,7 @@ export class Engine {
   });
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
+  private KILL_FLOOR = -10;
 
   // Drag subsystem
   readonly snap: SnapSystem;
@@ -105,6 +107,12 @@ export class Engine {
         for (const t of this.miscTicks) t.fixedUpdate(FIXED_DT);
         for (const e of this.entities) e.fixedUpdate(FIXED_DT);
         for (const c of this.creatures) c.fixedUpdate(FIXED_DT);
+
+        for (const e of this.entities) if(e.rigidBody.translation().y < this.KILL_FLOOR && !(e instanceof Segment && e.creature)){
+          this.entities.delete(e);
+          console.log("Destroyed", e);
+          e.dispose();
+        }
         this.drag.fixedUpdate(FIXED_DT);
         this.physics.step();
         this.accumulator -= FIXED_DT;
