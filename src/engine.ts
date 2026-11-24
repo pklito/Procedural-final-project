@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { Physics, FIXED_DT } from './physics';
-import { DragSystem, ShakeSystem } from './systems/drag';
+import { DragSystem } from './systems/drag';
 import type { Entity } from './entity';
 import type { Creature } from './creature';
+import { ShakeSystem } from './systems/shake';
 import { InputManager } from './inputs';
 import { SnapSystem } from './systems/snap';
 import { Segment } from './segment';
@@ -70,9 +71,9 @@ export class Engine {
     return entity;
   }
 
-  remove(entity: Entity) : boolean {
-    if (entity instanceof Segment && entity.creature){
-      console.warn("Cannot destroy segments of a creature yet TODO");
+  remove(entity: Entity): boolean {
+    if (entity instanceof Segment && entity.creature) {
+      console.warn('Cannot destroy segments of a creature yet TODO');
       return false;
     }
     if (!this.entities.delete(entity)) return false;
@@ -116,7 +117,7 @@ export class Engine {
         for (const c of this.creatures) c.fixedUpdate(FIXED_DT);
 
         for (const e of this.entities)
-          if (e.rigidBody.translation().y < this.KILL_FLOOR){
+          if (e.rigidBody.translation().y < this.KILL_FLOOR) {
             this.remove(e);
           }
         this.physics.step();
