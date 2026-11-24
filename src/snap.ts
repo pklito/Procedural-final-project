@@ -3,6 +3,7 @@ import type { Engine, Ticks, UiTicks } from './engine';
 import { Vector3 } from 'three';
 import { Vec2 } from './physics';
 
+type ConnectionResult = { a: Vec2; b: Vec2, collA : RAPIER.Collider, collB : RAPIER.Collider }
 
 export class SnapSystem implements UiTicks{
     dontTick: boolean = false;
@@ -29,7 +30,7 @@ private queryMouse(ignore : RAPIER.Collider | null): RAPIER.Collider | null {
   return found;
 }
     /**a is a rigidBody (several colliders) b is one collider.*/
-  getLink(a : RAPIER.RigidBody, b : RAPIER.Collider): { a: Vec2; b: Vec2, collA : RAPIER.Collider, collB : RAPIER.Collider } | null {
+  getLink(a : RAPIER.RigidBody, b : RAPIER.Collider): ConnectionResult | null {
     let best: RAPIER.ShapeContact | null = null;
     let best_i : number;
     for (let i = 0; i < a.numColliders(); i++) {
@@ -52,6 +53,10 @@ private queryMouse(ignore : RAPIER.Collider | null): RAPIER.Collider | null {
   update(dt: number): void {
       if(this.isSnapping() && this.engine.drag.draggedRigidBody){
         const newCollider = this.queryMouse(this.engine.drag.draggedRigidBody.collider(0));
+        if(!newCollider){
+            this.line.sync(null);
+            return;
+        }
         const connection = this.getLink(this.engine.drag.draggedRigidBody, newCollider);
         this.line.sync(connection);
       }

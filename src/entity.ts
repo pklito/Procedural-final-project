@@ -29,6 +29,7 @@ export abstract class Entity implements Ticks {
   get rigidBody() {return this.rb;}
   protected createRigidBody(desc: RAPIER.RigidBodyDesc) {
     const body = this.world.createRigidBody(desc);
+    body.userData = this;
     this.rb = body;
   }
 
@@ -52,6 +53,11 @@ export abstract class Entity implements Ticks {
   }
 
   fixedUpdate(_dt: number): void {}
+
+  static from(body: RAPIER.RigidBody | null | undefined): Entity | null {
+    const data = body?.userData;
+    return data instanceof Entity ? data : null;
+  }
 
   /** syncs 3js visuals to physics */
   sync() {
