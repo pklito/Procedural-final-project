@@ -80,3 +80,13 @@ export class Physics {
     this.world.removeImpulseJoint(joint, true);
   }
 }
+
+export function worldToLocal(body: RAPIER.RigidBody, p: Vec2): Vec2 {
+  const t = body.translation();
+  const angle = body.rotation(); // radians in rapier 2D
+  const dx = p.x - t.x;
+  const dy = p.y - t.y;
+  const c = Math.cos(-angle);
+  const s = Math.sin(-angle);
+  return { x: dx * c - dy * s, y: dx * s + dy * c };
+}
