@@ -1,5 +1,7 @@
 import RAPIER from '@dimforge/rapier2d-compat';
 import type { Engine, Ticks, UiTicks } from './engine';
+import { Vector3 } from 'three';
+import { Vec2 } from './physics';
 
 /**
  * Mouse-drag system.
@@ -11,6 +13,7 @@ export class DragSystem implements Ticks{
   public dontTick: boolean;
   private dragged: RAPIER.RigidBody | null = null;
   private held = false;
+  private dragPosition: Vector3 = new Vector3();
 
   stiffness = 20;
   damping = 5;
@@ -65,7 +68,13 @@ export class DragSystem implements Ticks{
       return;
     }
 
-    const { x: mx, y: my } = this.engine.inputs.mouseWorld();
+    if(!this.engine.inputs.down('c') && !this.engine.inputs.down('shift')){
+     this.dragPosition.x = this.engine.inputs.mouseWorld().x; 
+     this.dragPosition.y = this.engine.inputs.mouseWorld().y; 
+     this.dragPosition.z = this.engine.inputs.mouseWorld().z; 
+    }
+
+    const { x: mx, y: my } = this.dragPosition;
     const pos = this.dragged.translation();
     const vel = this.dragged.linvel();
 
