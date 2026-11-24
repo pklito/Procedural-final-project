@@ -57,16 +57,14 @@ I am currently looking into using threejs or pixijs instead, I think either opti
   - once I have some animations, ill look into how to make these blobs look like limbs.
 ## Milestone 2: Implementation part 2 (due 11/23)
 IDEALLY: animations and some graphics
-We're over halfway there! This week should be about fixing bugs and extending the core of your generator. Make sure by the end of this week _your generator works and is feature complete._ Any core engine features that don't make it in this week should be cut! Don't worry if you haven't managed to exactly hit your goals. We're more interested in seeing proof of your development effort than knowing your planned everything perfectly. 
+Im still some ways away from where I want the engine to be, I've finally managed to figure out a solution I can add features to as I want to and I've had some success
 
-Put all your code in your forked repository.
-
-Submission: Add a new section to your README titled: Milestone #3, which should include
-- written description of progress on your project goals. If you haven't hit all your goals, what did you have to cut and why? 
-- Detailed output from your generator, images, video, etc.
-We'll check your repository for updates. No need to create a new pull request.
-
-Come to class on the due date with a WORKING COPY of your project. We'll be spending time in class critiquing and reviewing your work so far.
+<img width="507" height="393" alt="image" src="https://github.com/user-attachments/assets/727fb6c5-f677-49f3-a39d-d4c4f7e04fc5" />
+I have a codebase that has creatures that are made up of links of segments, and I can drag segments around, and connect them to the creature.
+Segments can also be generated randomly, currently it's just simple shaped primitives.
+It hasn't all gone exactly as I thought:
+https://github.com/user-attachments/assets/f41c8d30-32cf-4d52-a298-2886c5275722
+This all being said I've hardly grazed the procedural part of the project so I'd say im still a good portion away from where I want to be with the project.
 
 ## Final submission (due 11/30)
 Time to polish! Spen this last week of your project using your generator to produce beautiful output. Add textures, tune parameters, play with colors, play with camera animation. Take the feedback from class critques and use it to take your project to the next level.
