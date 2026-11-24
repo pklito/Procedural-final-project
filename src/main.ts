@@ -6,14 +6,14 @@ import { Creature } from './creature';
 
 async function main() {
   const engine = await Engine.create();
-  const sceneDemo = new ExampleScene(engine);
+  const sceneDemo = new ExampleLevel(engine);
   sceneDemo.init();
   engine.miscTicksUi.add(sceneDemo);
   engine.miscTicks.add(sceneDemo);
   engine.start();
 }
 
-class ExampleScene implements UiTicks, Ticks{
+class ExampleLevel implements UiTicks, Ticks{
   public dontTick: boolean;
   constructor(private engine : Engine){}
 init(){
@@ -75,10 +75,39 @@ init(){
   }
 
   public update(dt: number){
-    if(this.engine.inputs.justPressed('w')){
-      
-    }
+  if (this.engine.inputs.justPressed('w')) {
+    this.spawnRandomSegment();
   }
+}
+
+private spawnRandomSegment() {
+  const rand = (min: number, max: number) => min + Math.random() * (max - min);
+
+  // Pick a random shape type
+  const kind = Math.floor(Math.random() * 3);
+  let shape: any;
+
+  if (kind === 0) {
+    shape = { type: 'circle', radius: rand(0.2, 0.8) };
+  } else if (kind === 1) {
+    shape = { type: 'rect', width: rand(0.4, 2), height: rand(0.3, 1.5) };
+  } else {
+    const s = rand(0.4, 1.2);
+    shape = {
+      type: 'polygon',
+      vertices: [[0, s], [-s * 0.9, -s * 0.5], [s * 0.9, -s * 0.5]],
+    };
+  }
+
+  const seg = new Segment(this.engine, {
+    x: this.engine.inputs.mouseWorld().x,
+    y: this.engine.inputs.mouseWorld().y,
+    shape,
+    color: Math.floor(Math.random() * 0xffffff),
+  });
+  this.engine.add(seg);
+  this.engine.drag.tryGrab(seg.rigidBody);
+}
 
   public fixedUpdate(dt: number){
 

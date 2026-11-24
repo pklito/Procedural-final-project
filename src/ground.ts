@@ -27,7 +27,7 @@ export class Ground extends Entity {
   lifeTime = 0;
   fixedUpdate(_dt: number): void {
     this.lifeTime += _dt;
-    if(this.lifeTime > 2){
+    if(this.engine.inputs.justPressed('f')){
       this.dispose();
     }
   }

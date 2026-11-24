@@ -30,7 +30,11 @@ export class DragSystem implements Ticks{
       this.dragged = null;
     });
   }
-
+  public tryGrab(body: RAPIER.RigidBody){
+    if(this.held && !(this.dragged && this.dragged.isValid())){
+      this.dragged = body;
+    }
+  }
   /** Find the first dynamic body under the cursor and store it. */
   private grab() {
     const { x, y } = this.engine.inputs.mouseWorld();
@@ -38,6 +42,7 @@ export class DragSystem implements Ticks{
     this.engine.physics.world.intersectionsWithPoint(
       { x, y },
       (collider) => {
+        console.log(collider);
         const body = collider.parent();
         if (body && body.bodyType() === RAPIER.RigidBodyType.Dynamic) {
           this.dragged = body;
