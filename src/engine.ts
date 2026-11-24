@@ -4,7 +4,7 @@ import { DragSystem } from './systems/drag';
 import type { Entity } from './entity';
 import type { Creature } from './creature';
 import { ShakeSystem } from './systems/shake';
-import { InputManager } from './inputs';
+import { Gui, InputManager } from './inputs';
 import { SnapSystem } from './systems/snap';
 import { Segment } from './segment';
 
@@ -29,15 +29,16 @@ export class Engine {
   });
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
-  private KILL_FLOOR = -10;
 
   // Drag subsystem
   readonly snap: SnapSystem;
   readonly drag: DragSystem;
   readonly shake: ShakeSystem;
   readonly inputs: InputManager;
+  readonly gui : Gui;
 
   // engine stuff
+  private KILL_FLOOR = -10;
   private readonly clock = new THREE.Clock();
   private readonly entities = new Set<Entity>();
   private readonly creatures = new Set<Creature>();
@@ -58,6 +59,7 @@ export class Engine {
 
     window.addEventListener('resize', () => this.resize());
 
+    this.gui = new Gui(this);
     this.drag = new DragSystem(this);
     this.snap = new SnapSystem(this);
     this.shake = new ShakeSystem(this);
