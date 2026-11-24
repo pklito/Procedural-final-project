@@ -15,8 +15,9 @@ export class DragSystem implements Ticks{
   private held = false;
   private dragPosition: Vector3 = new Vector3();
 
-  stiffness = 20;
-  damping = 5;
+  stiffness = 100;
+  damping = 15;
+  torque = 0.5;
 
   constructor(private engine: Engine) {
     const canvas = engine.canvas;
@@ -86,10 +87,10 @@ export class DragSystem implements Ticks{
 
     this.dragged.applyImpulse({ x: fx * dt, y: fy * dt }, true);
     if(this.engine.inputs.down('q')){
-      this.dragged.applyTorqueImpulse(0.25 * dt, true);
+      this.dragged.applyTorqueImpulse(this.torque * dt, true);
     }
     if(this.engine.inputs.down('e')){
-      this.dragged.applyTorqueImpulse(-0.25 * dt, true);
+      this.dragged.applyTorqueImpulse(-this.torque * dt, true);
     }
   }
 
