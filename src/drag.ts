@@ -1,5 +1,5 @@
 import RAPIER from '@dimforge/rapier2d-compat';
-import type { Engine, Ticks } from './engine';
+import type { Engine, Ticks, UiTicks } from './engine';
 
 /**
  * Mouse-drag system.
@@ -42,7 +42,6 @@ export class DragSystem implements Ticks{
     this.engine.physics.world.intersectionsWithPoint(
       { x, y },
       (collider) => {
-        console.log(collider);
         const body = collider.parent();
         if (body && body.bodyType() === RAPIER.RigidBodyType.Dynamic) {
           this.dragged = body;
@@ -74,6 +73,12 @@ export class DragSystem implements Ticks{
     const fy = this.stiffness * (my - pos.y) - this.damping * vel.y;
 
     this.dragged.applyImpulse({ x: fx * dt, y: fy * dt }, true);
+    if(this.engine.inputs.down('q')){
+      this.dragged.applyTorqueImpulse(0.25 * dt, true);
+    }
+    if(this.engine.inputs.down('e')){
+      this.dragged.applyTorqueImpulse(-0.25 * dt, true);
+    }
   }
 
   fixedUpdate(dt: number): void {

@@ -8,6 +8,17 @@ export class InputManager{
     private keysJustPressed: Set<string> = new Set<string>();
     private keysJustReleased: Set<string> = new Set<string>();
 
+    private keyJustPressedFixed: Set<string> = new Set<string>();
+    private keyJustReleasedFixed: Set<string> = new Set<string>();
+    
+    justPressedFixed(e:string):boolean{
+        return this.keyJustPressedFixed.has(e);
+    }
+
+    justReleasedFixed(e:string):boolean{
+        return this.keyJustReleasedFixed.has(e);
+    }
+
     justPressed(e:string):boolean{
         return this.keysJustPressed.has(e);
     }
@@ -27,6 +38,11 @@ export class InputManager{
         this.keysJustReleased.clear();
     }
 
+    FixedFrameTick(){
+        this.keyJustPressedFixed.clear();
+        this.keyJustReleasedFixed.clear();
+    }
+
     constructor(private engine: Engine){
         this.engine.canvas.addEventListener('mousemove', (e) => {
         this.mouse
@@ -41,6 +57,7 @@ export class InputManager{
         window.addEventListener('keydown', (e) => {
             if(!this.keysHeld.has(e.key.toLowerCase())){
                 this.keysJustPressed.add(e.key.toLowerCase());
+                this.keyJustPressedFixed.add(e.key.toLowerCase());
             }
             this.keysHeld.add(e.key.toLowerCase());
         });
@@ -48,12 +65,13 @@ export class InputManager{
         window.addEventListener('keyup', (e) => {
             this.keysHeld.delete(e.key.toLowerCase());
             this.keysJustReleased.add(e.key.toLowerCase());
-
+            this.keyJustReleasedFixed.add(e.key.toLowerCase());
         });
 
         this.engine.canvas.addEventListener('mousedown', (e) => {
             if(!this.keysHeld.has('mouse')){
                 this.keysJustPressed.add('mouse');
+                this.keyJustPressedFixed.add('mouse');
             }
             this.keysHeld.add('mouse');
         })
@@ -62,6 +80,7 @@ export class InputManager{
         this.engine.canvas.addEventListener('mouseup', (e) => {
             this.keysHeld.delete('mouse');
             this.keysJustReleased.add('mouse');
+            this.keyJustReleasedFixed.add('mouse');
             
         })
         
