@@ -31,8 +31,6 @@ export function spawnRandomSegment(engine: Engine, position: Vec2) {
   return seg;
 }
 
-
-
 function startingShape(s: number = 1): [number, number][] {
   return [
     [-0.5 * s, -0.5 * s],

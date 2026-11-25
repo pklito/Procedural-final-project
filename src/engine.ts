@@ -35,7 +35,7 @@ export class Engine {
   readonly drag: DragSystem;
   readonly shake: ShakeSystem;
   readonly inputs: InputManager;
-  readonly gui : Gui;
+  readonly gui: Gui;
 
   // engine stuff
   private KILL_FLOOR = -10;
