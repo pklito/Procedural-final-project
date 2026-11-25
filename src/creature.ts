@@ -11,6 +11,12 @@ export interface CreatureJoint {
   targetAngle: number;
 }
 
+//should be in physics but im lazy
+function invInertia(body: RAPIER.RigidBody): number {
+  if (!body.isDynamic()) return 0;
+  const I = body.effectiveAngularInertia();
+  return I > 1e-9 ? 1 / I : 0;
+}
 /**
  * Creature class, holds segments and joints.
  * addSegment(Segment):Segment - modifies a segment to be part of this creature(collision)
@@ -25,8 +31,13 @@ export class Creature implements Ticks {
   readonly joints: CreatureJoint[] = [];
   readonly collisionBit: number;
 
-  straightenStiffness = 3.0;
-  straightenDamping = 0.5;
+  straightenStiffness = 2000.0;
+  straightenDamping = 25.0;
+
+  // joint limits
+  maxJointTorque = 5000.0;
+  maxRelAngVel = 300.0;
+  bodyAngularDamping = 0.5;
 
   constructor(private engine: Engine) {
     this.collisionBit = engine.physics.allocateCreatureGroup();
@@ -36,6 +47,7 @@ export class Creature implements Ticks {
     this.segments.add(seg);
     seg.creature = this;
     seg.setCollisionGroup(this.collisionBit, 0xffff & ~this.collisionBit);
+    seg.rigidBody.setAngularDamping(this.bodyAngularDamping);
     return seg;
   }
 
@@ -61,18 +73,44 @@ export class Creature implements Ticks {
   }
 
   fixedUpdate(dt: number) {
-    if (this.dontTick) return;
+    if (this.dontTick || dt <= 0) return;
+
     for (const { segA, segB, targetAngle } of this.joints) {
-      const relAngle = segB.rigidBody.rotation() - segA.rigidBody.rotation();
-      const error = targetAngle - relAngle;
+      const a = segA.rigidBody;
+      const b = segB.rigidBody;
 
-      const normErr = Math.atan2(Math.sin(error), Math.cos(error));
-      const relVel = segB.rigidBody.angvel() - segA.rigidBody.angvel();
+      const inertiaInvSums = invInertia(a) + invInertia(b);
+      if (inertiaInvSums === 0) continue;
+      const jointInnertia = 1 / inertiaInvSums;
 
-      const torque = (this.straightenStiffness * normErr - this.straightenDamping * relVel) * dt;
+      const error = targetAngle - (b.rotation() - a.rotation());
+      const closestError = Math.atan2(Math.sin(error), Math.cos(error));
 
-      segA.rigidBody.applyTorqueImpulse(-torque, true);
-      segB.rigidBody.applyTorqueImpulse(torque, true);
+      //clamp 
+      let jointAngvel = b.angvel() - a.angvel();
+      const clampedAngvel = Math.max(-this.maxRelAngVel, Math.min(this.maxRelAngVel, jointAngvel));
+      const excess = jointAngvel - clampedAngvel;
+      jointAngvel = clampedAngvel;
+
+      
+      const s = this.straightenStiffness;
+      const c = this.straightenDamping;
+      const w = jointAngvel;
+      const e = closestError;
+      //better solution than the previous J = (s*closestError - w*c)*dt;
+      let J = (jointInnertia * dt * (s * e - (c + dt * s) * w)) / (1 + dt * c + dt * dt * s);
+
+      // Remove the part of velocity above the cap too
+      J -= jointInnertia * excess;
+
+      //torque clamp
+      const maxJ = this.maxJointTorque * dt;
+      J = Math.max(-maxJ, Math.min(maxJ, J));
+
+      if (!Number.isFinite(J)) continue;
+
+      b.applyTorqueImpulse(J, true);
+      a.applyTorqueImpulse(-J, true);
     }
   }
 
