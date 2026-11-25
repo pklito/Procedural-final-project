@@ -36,7 +36,14 @@ export function spawnWeird(e: Engine, p: Vec2) : Segment{
 }
 
 export function spawnElipse(e: Engine, p: Vec2){
-  let s : any = scale(catmulClark(randomRemove(catmulClark(startingShape(1),rand(0.2,0.6)),0.5),rand(0.2,0.6)),1., rand(0.2, 0.7));
+  //scale(catmulClark(randomRemove(catmulClark(startingShape(1),rand(0.2,0.6)),0.5),rand(0.2,0.6)),1., rand(0.2, 0.7));
+  const s = pipe(
+    startingShape(1),
+    p => catmulClark(p, rand(0.2, 0.6)),
+    p => randomRemove(p, 0.5),
+    p => catmulClark(p, rand(0.2, 0.6)),
+    p => scale(p, 1, rand(0.2, 0.7)),
+  );
   let shape: any = {
     type: 'polygon',
     vertices:s,
@@ -44,6 +51,11 @@ export function spawnElipse(e: Engine, p: Vec2){
   
   return spawns(e, p ,shape);
 }
+
+
+
+//Pipelines
+const pipe = <T>(v: T, ...fns: ((v: T) => T)[]) => fns.reduce((a, f) => f(a), v);
 
 function startingShape(s: number = 1): [number, number][] {
   return [
