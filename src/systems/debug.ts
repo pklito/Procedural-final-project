@@ -9,7 +9,8 @@ export class DebugSystem implements UiTicks {
   }
   dontTick: boolean;
 
-  private updateVisuals() {
+  // ------------ COLLIDER ----------------
+  private colliderTick() {
     if (this.dontTick) {
       return;
     }
@@ -23,21 +24,7 @@ export class DebugSystem implements UiTicks {
     this.lines.geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   }
 
-  private updateInputs() {
-    if (this.engine.inputs.justPressed('p')) {
-      this.toggleDebug();
-    }
-  }
-  update(dt: number): void {
-    this.updateInputs();
-    this.updateVisuals();
-  }
-  private toggleDebug() {
-    if (this.lines) {
-      this.engine.scene.remove(this.lines);
-      this.lines = undefined;
-      return;
-    }
+  private colliderEnable() {
     this.lines = new THREE.LineSegments(
       new THREE.BufferGeometry(),
       new THREE.LineBasicMaterial({ color: 0x00ff88, depthTest: false }),
@@ -45,5 +32,27 @@ export class DebugSystem implements UiTicks {
     this.lines.position.z = 5;
     this.lines.frustumCulled = false;
     this.engine.scene.add(this.lines);
+  }
+
+  private colliderDisable() {
+    this.engine.scene.remove(this.lines);
+    this.lines = undefined;
+  }
+  private colliderToggle() {
+    if (this.lines) {
+      this.colliderDisable();
+      return;
+    }
+    this.colliderEnable();
+  }
+
+  private updateInputs() {
+    if (this.engine.inputs.justPressed('p')) {
+      this.colliderToggle();
+    }
+  }
+  update(dt: number): void {
+    this.updateInputs();
+    this.colliderTick();
   }
 }
