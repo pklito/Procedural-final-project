@@ -124,5 +124,6 @@ export class Creature implements Ticks {
       this.engine.remove(seg);
     }
     this.segments.clear();
+    this.engine.physics.deallocateCreatureGroup(this.collisionBit);
   }
 }

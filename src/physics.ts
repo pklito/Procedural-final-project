@@ -16,7 +16,8 @@ export const groups = (membership: number, filter: number) =>
 
 export class Physics {
   readonly world: RAPIER.World;
-  private nextCreatureBit = 2; // bit-index (0x0004 = 1 << 2)
+  
+  private availableCreatureBits = 0xfffc; // Bits 2–15 available
 
   private constructor() {
     this.world = new RAPIER.World({ x: 0, y: -9.8 });
@@ -34,11 +35,29 @@ export class Physics {
 
   /** Allocate a unique collision-group bit for a new creature (up to 14 creatures). */
 
-  allocateCreatureGroup(): number {
-    if (this.nextCreatureBit > 15)
-      throw new Error('No more creature collision-group bits available (max 14)');
-    return 1 << this.nextCreatureBit++;
+
+allocateCreatureGroup(): number {
+  if (this.availableCreatureBits === 0)
+    throw new Error('No more creature collision-group bits available');
+
+  const bit = this.availableCreatureBits & -this.availableCreatureBits; //gets lowest bit (according to)
+  this.availableCreatureBits &= ~bit;
+  return bit;
+}
+
+deallocateCreatureGroup(group: number): void {
+  if (
+    group === 0 ||
+    (group & (group - 1)) !== 0 ||
+    (group & 0xfffc) !== group
+  ) {
+    throw new Error(`Invalid creature collision group: ${group}`);
   }
+  if (this.availableCreatureBits & group)
+    throw new Error(`Creature collision group already freed: ${group}`);
+
+  this.availableCreatureBits |= group;
+}
 
   // getters
 
