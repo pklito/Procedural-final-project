@@ -2,25 +2,9 @@ import { Engine } from '../engine';
 import { Vec2 } from '../physics';
 import { Segment } from '../segment';
 
-export function spawnRandomSegment(engine: Engine, position: Vec2) {
-  const rand = (min: number, max: number) => min + Math.random() * (max - min);
+const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
-  // Pick a random shape type
-  const kind = Math.floor(Math.random() * 3);
-  let shape: any;
-
-  if (kind === 0) {
-    shape = { type: 'circle', radius: rand(0.1, 0.5) };
-  } else if (kind === 1) {
-    shape = { type: 'rect', width: rand(0.1, 0.5), height: rand(0.3, 2) };
-  } else {
-    const s = rand(0.4, 1.2);
-    shape = {
-      type: 'polygon',
-      vertices: softTurbulence(catmulClark(randomRemove(startingShape(1), 0.3), 0.6)),
-    };
-  }
-
+function spawns(engine: Engine, position: Vec2, shape: any) : Segment {
   const seg = new Segment(engine, {
     x: position.x,
     y: position.y,
@@ -29,6 +13,36 @@ export function spawnRandomSegment(engine: Engine, position: Vec2) {
   });
   engine.add(seg);
   return seg;
+}
+
+export function spawnRectangle(e: Engine, p: Vec2) : Segment{
+  return spawns(e, p, { type: 'rect', width: rand(0.1, 0.5), height: rand(0.3, 2) });
+}
+
+export function spawnRock(e: Engine, p: Vec2) : Segment{
+  let shape: any = {
+    type: 'polygon',
+    vertices: softTurbulence(catmulClark(randomRemove(startingShape(1), 0.3), 0.6)),
+  };
+  return spawns(e, p, shape);
+}
+
+export function spawnWeird(e: Engine, p: Vec2) : Segment{
+  let shape: any = {
+    type: 'polygon',
+    vertices: softTurbulence(catmulClark(randomRemove(startingShape(1), 0.3), 0.6)),
+  };
+  return spawns(e, p, shape);
+}
+
+export function spawnElipse(e: Engine, p: Vec2){
+  let s : any = scale(catmulClark(randomRemove(catmulClark(startingShape(1),rand(0.2,0.6)),0.5),rand(0.2,0.6)),1., rand(0.2, 0.7));
+  let shape: any = {
+    type: 'polygon',
+    vertices:s,
+  };
+  
+  return spawns(e, p ,shape);
 }
 
 function startingShape(s: number = 1): [number, number][] {
@@ -117,5 +131,11 @@ function softTurbulence(pts: [number, number][], amplitude: number = 0.15): [num
 
     const scale = 1 + noise;
     return [cx + dx * scale, cy + dy * scale] as [number, number];
+  });
+}
+
+function scale(pts: [number, number][], sx: number, sy: number): [number, number][] {
+  return pts.map(([x, y]) => {
+    return [x*sx, y*sy];
   });
 }

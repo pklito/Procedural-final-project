@@ -44,7 +44,7 @@ export class SnapSystem implements UiTicks {
       b,
       worldToLocal(a.rigidBody, this.connection.a),
       worldToLocal(b.rigidBody, this.connection.b),
-      -a.rigidBody.rotation() + b.rigidBody.rotation()
+      -a.rigidBody.rotation() + b.rigidBody.rotation(),
     );
   }
   private queryMouse(ignore: RAPIER.Collider | null): RAPIER.Collider | null {

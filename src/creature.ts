@@ -86,13 +86,12 @@ export class Creature implements Ticks {
       const error = targetAngle - (b.rotation() - a.rotation());
       const closestError = Math.atan2(Math.sin(error), Math.cos(error));
 
-      //clamp 
+      //clamp
       let jointAngvel = b.angvel() - a.angvel();
       const clampedAngvel = Math.max(-this.maxRelAngVel, Math.min(this.maxRelAngVel, jointAngvel));
       const excess = jointAngvel - clampedAngvel;
       jointAngvel = clampedAngvel;
 
-      
       const s = this.straightenStiffness;
       const c = this.straightenDamping;
       const w = jointAngvel;

@@ -3,7 +3,7 @@ import { Engine, Ticks, UiTicks } from './engine';
 import { Ground } from './ground';
 import { Segment } from './segment';
 import { Creature } from './creature';
-import { spawnRandomSegment } from './systems/limbgen';
+import { spawnElipse, spawnRectangle, spawnRock, spawnWeird } from './systems/limbgen';
 
 async function main() {
   const engine = await Engine.create();
@@ -86,7 +86,19 @@ class ExampleLevel implements UiTicks, Ticks {
 
   public update(dt: number) {
     if (this.engine.inputs.justPressed('1')) {
-      const seg = spawnRandomSegment(this.engine, this.engine.inputs.mouseWorld());
+      const seg = spawnRectangle(this.engine, this.engine.inputs.mouseWorld());
+      this.engine.drag.tryGrab(seg.rigidBody);
+    }
+    if (this.engine.inputs.justPressed('2')) {
+      const seg = spawnElipse(this.engine, this.engine.inputs.mouseWorld());
+      this.engine.drag.tryGrab(seg.rigidBody);
+    }
+    if (this.engine.inputs.justPressed('3')) {
+      const seg = spawnRock(this.engine, this.engine.inputs.mouseWorld());
+      this.engine.drag.tryGrab(seg.rigidBody);
+    }
+    if (this.engine.inputs.justPressed('4')) {
+      const seg = spawnWeird(this.engine, this.engine.inputs.mouseWorld());
       this.engine.drag.tryGrab(seg.rigidBody);
     }
   }
