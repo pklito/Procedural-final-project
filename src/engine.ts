@@ -43,7 +43,7 @@ export class Engine {
   private KILL_FLOOR = -10;
   private readonly clock = new THREE.Clock();
   private readonly entities = new Set<Entity>();
-  private readonly creatures = new Set<Creature>();
+  readonly creatures = new Set<Creature>();
   readonly miscTicks = new Set<Ticks>();
   readonly miscTicksUi = new Set<UiTicks>();
   private accumulator = 0;
@@ -106,6 +106,7 @@ export class Engine {
     this.camera.bottom = -VIEW_HEIGHT / 2;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.debug.resize();
   }
 
   //physics loop
