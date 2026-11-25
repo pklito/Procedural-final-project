@@ -25,6 +25,10 @@ export class SnapSystem implements UiTicks {
     }
     console.log('CONNECTING', a, b);
     if (b.creature && a.creature) {
+      if(a.creature === b.creature){
+        console.error("segments are part of the same creature!")
+        return;
+      }
       let parentSegment = b.creature.segments.size < a.creature.segments.size ? a: b;
       let destroyedSegment = b.creature.segments.size < a.creature.segments.size ? b: a;
       for (const s of destroyedSegment.creature.segments){
