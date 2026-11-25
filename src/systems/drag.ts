@@ -89,10 +89,10 @@ export class DragSystem implements Ticks {
 
     this.dragged.applyImpulse({ x: fx * mass * dt, y: fy * mass * dt }, true);
     if (this.engine.inputs.down('q')) {
-      this.dragged.applyTorqueImpulse(this.torque * dt, true);
+      this.dragged.applyTorqueImpulse(this.torque * mass * dt, true);
     }
     if (this.engine.inputs.down('e')) {
-      this.dragged.applyTorqueImpulse(-this.torque * dt, true);
+      this.dragged.applyTorqueImpulse(-this.torque * mass * dt, true);
     }
   }
 
