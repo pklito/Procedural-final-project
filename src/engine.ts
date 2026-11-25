@@ -7,6 +7,7 @@ import { ShakeSystem } from './systems/shake';
 import { Gui, InputManager } from './inputs';
 import { SnapSystem } from './systems/snap';
 import { Segment } from './segment';
+import { DebugSystem } from './systems/debug';
 
 export interface Ticks {
   fixedUpdate(dt: number): void;
@@ -34,6 +35,7 @@ export class Engine {
   readonly snap: SnapSystem;
   readonly drag: DragSystem;
   readonly shake: ShakeSystem;
+  readonly debug: DebugSystem;
   readonly inputs: InputManager;
   readonly gui: Gui;
 
@@ -45,7 +47,6 @@ export class Engine {
   readonly miscTicks = new Set<Ticks>();
   readonly miscTicksUi = new Set<UiTicks>();
   private accumulator = 0;
-  private debug?: THREE.LineSegments;
 
   static async create() {
     return new Engine(await Physics.create());
@@ -63,6 +64,7 @@ export class Engine {
     this.drag = new DragSystem(this);
     this.snap = new SnapSystem(this);
     this.shake = new ShakeSystem(this);
+    this.debug = new DebugSystem(this);
     this.resize();
   }
 
@@ -128,41 +130,11 @@ export class Engine {
 
       // Render
       for (const e of this.entities) e.sync();
-      this.updateDebug();
       this.renderer.render(this.scene, this.camera);
-
-      if (this.inputs.justPressed('p')) {
-        this.toggleDebug();
-      }
 
       for (const u of this.miscTicksUi) u.update(dt);
       this.inputs.frameTick();
     });
   }
 
-  private toggleDebug() {
-    if (this.debug) {
-      this.scene.remove(this.debug);
-      this.debug = undefined;
-      return;
-    }
-    this.debug = new THREE.LineSegments(
-      new THREE.BufferGeometry(),
-      new THREE.LineBasicMaterial({ color: 0x00ff88, depthTest: false }),
-    );
-    this.debug.position.z = 5;
-    this.debug.frustumCulled = false;
-    this.scene.add(this.debug);
-  }
-
-  private updateDebug() {
-    if (!this.debug) return;
-    const v = this.physics.world.debugRender().vertices;
-    const pos = new Float32Array((v.length / 2) * 3);
-    for (let i = 0, j = 0; i < v.length; i += 2, j += 3) {
-      pos[j] = v[i];
-      pos[j + 1] = v[i + 1];
-    }
-    this.debug.geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  }
 }
