@@ -4,7 +4,7 @@ import { Segment } from '../segment';
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
-function spawns(engine: Engine, position: Vec2, shape: any) : Segment {
+function spawns(engine: Engine, position: Vec2, shape: any): Segment {
   const seg = new Segment(engine, {
     x: position.x,
     y: position.y,
@@ -15,11 +15,11 @@ function spawns(engine: Engine, position: Vec2, shape: any) : Segment {
   return seg;
 }
 
-export function spawnRectangle(e: Engine, p: Vec2) : Segment{
+export function spawnRectangle(e: Engine, p: Vec2): Segment {
   return spawns(e, p, { type: 'rect', width: rand(0.1, 0.5), height: rand(0.3, 2) });
 }
 
-export function spawnRock(e: Engine, p: Vec2) : Segment{
+export function spawnRock(e: Engine, p: Vec2): Segment {
   let shape: any = {
     type: 'polygon',
     vertices: softTurbulence(catmulClark(randomRemove(startingShape(1), 0.3), 0.6)),
@@ -27,7 +27,7 @@ export function spawnRock(e: Engine, p: Vec2) : Segment{
   return spawns(e, p, shape);
 }
 
-export function spawnWeird(e: Engine, p: Vec2) : Segment{
+export function spawnWeird(e: Engine, p: Vec2): Segment {
   let shape: any = {
     type: 'polygon',
     vertices: softTurbulence(catmulClark(randomRemove(startingShape(1), 0.3), 0.6)),
@@ -35,24 +35,22 @@ export function spawnWeird(e: Engine, p: Vec2) : Segment{
   return spawns(e, p, shape);
 }
 
-export function spawnElipse(e: Engine, p: Vec2){
+export function spawnElipse(e: Engine, p: Vec2) {
   //scale(catmulClark(randomRemove(catmulClark(startingShape(1),rand(0.2,0.6)),0.5),rand(0.2,0.6)),1., rand(0.2, 0.7));
   const s = pipe(
     startingShape(1),
-    p => catmulClark(p, rand(0.2, 0.6)),
-    p => randomRemove(p, 0.5),
-    p => catmulClark(p, rand(0.2, 0.6)),
-    p => scale(p, rand(0.7, 1.3), rand(0.2, 0.8)),
+    (p) => catmulClark(p, rand(0.2, 0.6)),
+    (p) => randomRemove(p, 0.5),
+    (p) => catmulClark(p, rand(0.2, 0.6)),
+    (p) => scale(p, rand(0.7, 1.3), rand(0.2, 0.8)),
   );
   let shape: any = {
     type: 'polygon',
-    vertices:s,
+    vertices: s,
   };
-  
-  return spawns(e, p ,shape);
+
+  return spawns(e, p, shape);
 }
-
-
 
 //Pipelines
 const pipe = <T>(v: T, ...fns: ((v: T) => T)[]) => fns.reduce((a, f) => f(a), v);
@@ -148,6 +146,6 @@ function softTurbulence(pts: [number, number][], amplitude: number = 0.15): [num
 
 function scale(pts: [number, number][], sx: number, sy: number): [number, number][] {
   return pts.map(([x, y]) => {
-    return [x*sx, y*sy];
+    return [x * sx, y * sy];
   });
 }

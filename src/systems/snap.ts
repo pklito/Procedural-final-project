@@ -25,18 +25,17 @@ export class SnapSystem implements UiTicks {
     }
     console.log('CONNECTING', a, b);
     if (b.creature && a.creature) {
-      if(a.creature === b.creature){
-        console.error("segments are part of the same creature!")
+      if (a.creature === b.creature) {
+        console.error('segments are part of the same creature!');
         return;
       }
-      let parentSegment = b.creature.segments.size < a.creature.segments.size ? a: b;
-      let destroyedSegment = b.creature.segments.size < a.creature.segments.size ? b: a;
-      for (const s of destroyedSegment.creature.segments){
-        if(s === destroyedSegment)
-          continue;
+      let parentSegment = b.creature.segments.size < a.creature.segments.size ? a : b;
+      let destroyedSegment = b.creature.segments.size < a.creature.segments.size ? b : a;
+      for (const s of destroyedSegment.creature.segments) {
+        if (s === destroyedSegment) continue;
         parentSegment.creature.addSegment(s);
       }
-      for (const j of destroyedSegment.creature.joints){
+      for (const j of destroyedSegment.creature.joints) {
         parentSegment.creature.joints.push(j);
       }
       destroyedSegment.creature.joints.length = 0;
@@ -51,7 +50,8 @@ export class SnapSystem implements UiTicks {
       segment = a;
       creaturesSegment = b;
     }
-    if (!creature) {  //this is always a.creature but w/e
+    if (!creature) {
+      //this is always a.creature but w/e
       const newCreature = new Creature(this.engine);
       this.engine.addCreature(newCreature);
       newCreature.addSegment(creaturesSegment);

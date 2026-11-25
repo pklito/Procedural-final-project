@@ -136,5 +136,4 @@ export class Engine {
       this.inputs.frameTick();
     });
   }
-
 }
