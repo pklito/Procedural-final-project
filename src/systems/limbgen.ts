@@ -42,7 +42,7 @@ export function spawnElipse(e: Engine, p: Vec2){
     p => catmulClark(p, rand(0.2, 0.6)),
     p => randomRemove(p, 0.5),
     p => catmulClark(p, rand(0.2, 0.6)),
-    p => scale(p, 1, rand(0.2, 0.7)),
+    p => scale(p, rand(0.7, 1.3), rand(0.2, 0.8)),
   );
   let shape: any = {
     type: 'polygon',
