@@ -8,11 +8,11 @@ export interface CreatureJoint {
   joint: RAPIER.ImpulseJoint;
   segA: Segment;
   segB: Segment;
-  // anchorA: Vec2;
-  // anchorB: Vec2;
+  anchorA: Vec2;
+  anchorB: Vec2;
   targetAngle: number;
-  // stiffness: number;
-  // damping: number;
+  stiffness: number;
+  damping: number;
 }
 
 //should be in physics but im lazy
@@ -91,7 +91,7 @@ export class Creature implements Ticks {
 
   connect(a: Segment, b: Segment, anchorA: Vec2, anchorB: Vec2, targetAngle = 0): CreatureJoint {
     const joint = this.engine.physics.revolute(a.rigidBody, b.rigidBody, anchorA, anchorB);
-    const cj: CreatureJoint = { joint, segA: a, segB: b, targetAngle };
+    const cj: CreatureJoint = { joint, segA: a, segB: b, targetAngle, anchorA: anchorA, anchorB: anchorB, stiffness : this.straightenStiffness, damping: this.straightenDamping };
     this.joints.push(cj);
     return cj;
   }
@@ -106,7 +106,7 @@ export class Creature implements Ticks {
 
     let i = 0;
     // Target angular velocities
-    for (const { segA, segB, targetAngle } of this.joints) {
+    for (const { segA, segB, targetAngle, stiffness, damping } of this.joints) {
       const a = segA.rigidBody;
       const b = segB.rigidBody;
 
@@ -119,8 +119,8 @@ export class Creature implements Ticks {
 
       let jointAngvel = b.angvel() - a.angvel();
       
-      const s = this.straightenStiffness;
-      const c = this.straightenDamping;
+      const s = stiffness;
+      const c = damping;
       const w = jointAngvel;
       const e = closestError;
 
