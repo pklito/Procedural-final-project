@@ -28,9 +28,30 @@ export function spawnRock(e: Engine, p: Vec2): Segment {
 }
 
 export function spawnWeird(e: Engine, p: Vec2): Segment {
+  let a = startingShape(1);
+  for(let i = 0; i < rand(3,8); i++){
+    let r = Math.floor(rand(0,5));
+    switch(r){
+      case 0:
+        a = catmulClark(a, rand(0.,0.5));
+        break;
+      case 1:
+        a = softTurbulence(a, rand(0.1,0.3));
+        break;
+      case 2:
+        a = randomRemove(a, 0.3, 5);
+        break;
+      case 3:
+        a = scale(a, 0.8, 1.3);
+        break;
+      case 4:
+        a = scale(a, rand(0.2,2), rand(0.2, 2));
+        break;
+    }
+  }
   let shape: any = {
     type: 'polygon',
-    vertices: softTurbulence(catmulClark(randomRemove(startingShape(1), 0.3), 0.6)),
+    vertices: a
   };
   return spawns(e, p, shape);
 }
