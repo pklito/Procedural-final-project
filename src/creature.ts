@@ -28,6 +28,7 @@ function invInertia(body: RAPIER.RigidBody): number {
 export class Creature implements Ticks {
   public dontTick: boolean = false;
   readonly segments = new Set<Segment>();
+  readonly segmentJoints = new Map<Creature, Set<CreatureJoint>>();
   readonly joints: CreatureJoint[] = [];
   readonly collisionBit: number;
 
@@ -39,7 +40,7 @@ export class Creature implements Ticks {
   maxRelAngVel = 300.0;
   bodyAngularDamping = 0.5;
 
-  constructor(private engine: Engine) {
+  constructor(protected engine: Engine) {
     this.collisionBit = engine.physics.allocateCreatureGroup();
   }
 
@@ -65,6 +66,25 @@ export class Creature implements Ticks {
       }
     }
   }
+  teleport(target: Vec2) {
+    const first = this.segments.values().next().value as Segment | undefined;
+    if (!first) return;
+
+    const ref = first.rigidBody.translation();
+    const dx = target.x - ref.x;
+    const dy = target.y - ref.y;
+
+    for (const seg of this.segments) {
+      const rb = seg.rigidBody;
+      const p = rb.translation();
+      rb.setTranslation({ x: p.x + dx, y: p.y + dy }, true);
+      rb.setLinvel({ x: 0, y: 0 }, true);
+      rb.setAngvel(0, true);
+      rb.resetForces(true);
+      rb.resetTorques(true);
+    }
+  }
+
   connect(a: Segment, b: Segment, anchorA: Vec2, anchorB: Vec2, targetAngle = 0): CreatureJoint {
     const joint = this.engine.physics.revolute(a.rigidBody, b.rigidBody, anchorA, anchorB);
     const cj: CreatureJoint = { joint, segA: a, segB: b, targetAngle };
@@ -125,5 +145,11 @@ export class Creature implements Ticks {
     }
     this.segments.clear();
     this.engine.physics.deallocateCreatureGroup(this.collisionBit);
+  }
+}
+
+class Tentacle extends Creature {
+  constructor(engine: Engine) {
+    super(engine);
   }
 }

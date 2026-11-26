@@ -7,6 +7,7 @@ type ConnectionResult = { a: Vec2; b: Vec2; collA: RAPIER.Collider; collB: RAPIE
 
 export class SnapSystem implements UiTicks {
   dontTick: boolean = false;
+  private static readonly INSET = 0.1;
   private static readonly MAX_LINK_DIST = 1000;
   private line: LinkLine;
   private connection: ConnectionResult;
@@ -81,7 +82,6 @@ export class SnapSystem implements UiTicks {
     return found;
   }
 
-  private static readonly INSET = 0.2;
   getLink(a: RAPIER.RigidBody, b: RAPIER.Collider): ConnectionResult | null {
     const m = this.engine.inputs.mouseWorld();
     const mouse = { x: m.x, y: m.y };

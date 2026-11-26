@@ -40,6 +40,7 @@ export class Engine {
   readonly gui: Gui;
 
   // engine stuff
+  private TP_RESET = {x: 0, y: 8};
   private KILL_FLOOR = -10;
   private readonly clock = new THREE.Clock();
   private readonly entities = new Set<Entity>();
@@ -77,7 +78,7 @@ export class Engine {
 
   remove(entity: Entity): boolean {
     if (entity instanceof Segment && entity.creature) {
-      console.warn('Cannot destroy segments of a creature yet TODO');
+      entity.creature.teleport(this.TP_RESET);
       return false;
     }
     if (!this.entities.delete(entity)) return false;
