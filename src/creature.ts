@@ -8,7 +8,11 @@ export interface CreatureJoint {
   joint: RAPIER.ImpulseJoint;
   segA: Segment;
   segB: Segment;
+  // anchorA: Vec2;
+  // anchorB: Vec2;
   targetAngle: number;
+  // stiffness: number;
+  // damping: number;
 }
 
 //should be in physics but im lazy
@@ -28,17 +32,17 @@ function invInertia(body: RAPIER.RigidBody): number {
 export class Creature implements Ticks {
   public dontTick: boolean = false;
   readonly segments = new Set<Segment>();
-  readonly segmentJoints = new Map<Creature, Set<CreatureJoint>>();
+  readonly segmentJoints = new Map<Creature, CreatureJoint[]>();
   readonly joints: CreatureJoint[] = [];
   readonly collisionBit: number;
 
   straightenStiffness = 2000.0;
-  straightenDamping = 25.0;
+  straightenDamping = 0;
 
   // joint limits
-  maxJointTorque = 5000.0;
+  maxJointTorque = 500.0;
   maxRelAngVel = 300.0;
-  bodyAngularDamping = 0.5;
+  bodyAngularDamping = 10.0;
 
   constructor(protected engine: Engine) {
     this.collisionBit = engine.physics.allocateCreatureGroup();
@@ -91,45 +95,64 @@ export class Creature implements Ticks {
     this.joints.push(cj);
     return cj;
   }
+  iterations = 8;
+
+  private iEff: number[] = [];
+  private wTarget: number[] = [];
+  private accJ: number[] = [];
 
   fixedUpdate(dt: number) {
     if (this.dontTick || dt <= 0) return;
 
+    let i = 0;
+    // Target angular velocities
     for (const { segA, segB, targetAngle } of this.joints) {
       const a = segA.rigidBody;
       const b = segB.rigidBody;
 
       const inertiaInvSums = invInertia(a) + invInertia(b);
-      if (inertiaInvSums === 0) continue;
-      const jointInnertia = 1 / inertiaInvSums;
+      this.iEff[i] = inertiaInvSums > 0 ? 1 / inertiaInvSums : 0;
+      this.accJ[i] = 0;
 
       const error = targetAngle - (b.rotation() - a.rotation());
       const closestError = Math.atan2(Math.sin(error), Math.cos(error));
 
-      //clamp
       let jointAngvel = b.angvel() - a.angvel();
-      const clampedAngvel = Math.max(-this.maxRelAngVel, Math.min(this.maxRelAngVel, jointAngvel));
-      const excess = jointAngvel - clampedAngvel;
-      jointAngvel = clampedAngvel;
-
+      
       const s = this.straightenStiffness;
       const c = this.straightenDamping;
       const w = jointAngvel;
       const e = closestError;
-      //better solution than the previous J = (s*closestError - w*c)*dt;
-      let J = (jointInnertia * dt * (s * e - (c + dt * s) * w)) / (1 + dt * c + dt * dt * s);
 
-      // Remove the part of velocity above the cap too
-      J -= jointInnertia * excess;
+      const targetAngVel = (w + dt * s * e) / (1 + dt * c + dt * dt * s);
+      this.wTarget[i] = Math.max(-this.maxRelAngVel, Math.min(this.maxRelAngVel, targetAngVel));
+      i++;
+    }
+    //Find the best impulses to match the computed angvels
+    for (let it = 0; it < this.iterations; it++) {
+      for (let i = 0; i < this.joints.length; i++) {
+      if (this.iEff[i] === 0) continue;
 
-      //torque clamp
+      const { segA, segB } = this.joints[i];
+      const a = segA.rigidBody;
+      const b = segB.rigidBody;
+
+      const jointInnertia = this.iEff[i];
+      const w = b.angvel() - a.angvel();
+
+      let J = jointInnertia * (this.wTarget[i] - w);
+
+      //Impulse
+      const oldJ = this.accJ[i];
       const maxJ = this.maxJointTorque * dt;
-      J = Math.max(-maxJ, Math.min(maxJ, J));
+      this.accJ[i] = Math.max(-maxJ, Math.min(maxJ, oldJ + J));
+      J = this.accJ[i] - oldJ;
 
       if (!Number.isFinite(J)) continue;
 
       b.applyTorqueImpulse(J, true);
       a.applyTorqueImpulse(-J, true);
+      }
     }
   }
 

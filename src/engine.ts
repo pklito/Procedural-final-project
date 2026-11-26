@@ -40,7 +40,7 @@ export class Engine {
   readonly gui: Gui;
 
   // engine stuff
-  private TP_RESET = {x: 0, y: 8};
+  private TP_RESET = { x: 0, y: 8 };
   private KILL_FLOOR = -10;
   private readonly clock = new THREE.Clock();
   private readonly entities = new Set<Entity>();
