@@ -16,11 +16,7 @@ export interface CreatureJoint {
 }
 
 //should be in physics but im lazy
-function invInertia(body: RAPIER.RigidBody): number {
-  if (!body.isDynamic()) return 0;
-  const I = body.effectiveAngularInertia();
-  return I > 1e-9 ? 1 / I : 0;
-}
+
 /**
  * Creature class, holds segments and joints.
  * addSegment(Segment):Segment - modifies a segment to be part of this creature(collision)
@@ -32,12 +28,12 @@ function invInertia(body: RAPIER.RigidBody): number {
 export class Creature implements Ticks {
   public dontTick: boolean = false;
   readonly segments = new Set<Segment>();
-  readonly segmentJoints = new Map<Creature, CreatureJoint[]>();
+  readonly segmentJoints = new Map<Segment, CreatureJoint[]>();
   readonly joints: CreatureJoint[] = [];
   readonly collisionBit: number;
 
   straightenStiffness = 2000.0;
-  straightenDamping = 0;
+  straightenDamping = 1.5;
 
   // joint limits
   maxJointTorque = 500.0;
@@ -53,6 +49,7 @@ export class Creature implements Ticks {
     seg.creature = this;
     seg.setCollisionGroup(this.collisionBit, 0xffff & ~this.collisionBit);
     seg.rigidBody.setAngularDamping(this.bodyAngularDamping);
+    this.segmentJoints.set(seg, []);
     return seg;
   }
 
@@ -69,6 +66,7 @@ export class Creature implements Ticks {
         this.joints.splice(i, 1);
       }
     }
+    this.segmentJoints.delete(seg);
   }
   teleport(target: Vec2) {
     const first = this.segments.values().next().value as Segment | undefined;
@@ -93,67 +91,14 @@ export class Creature implements Ticks {
     const joint = this.engine.physics.revolute(a.rigidBody, b.rigidBody, anchorA, anchorB);
     const cj: CreatureJoint = { joint, segA: a, segB: b, targetAngle, anchorA: anchorA, anchorB: anchorB, stiffness : this.straightenStiffness, damping: this.straightenDamping };
     this.joints.push(cj);
+    this.segmentJoints.get(a).push(cj);
+    this.segmentJoints.get(b).push(cj);
     return cj;
   }
-  iterations = 8;
-
-  private iEff: number[] = [];
-  private wTarget: number[] = [];
-  private accJ: number[] = [];
-
+  
   fixedUpdate(dt: number) {
     if (this.dontTick || dt <= 0) return;
-
-    let i = 0;
-    // Target angular velocities
-    for (const { segA, segB, targetAngle, stiffness, damping } of this.joints) {
-      const a = segA.rigidBody;
-      const b = segB.rigidBody;
-
-      const inertiaInvSums = invInertia(a) + invInertia(b);
-      this.iEff[i] = inertiaInvSums > 0 ? 1 / inertiaInvSums : 0;
-      this.accJ[i] = 0;
-
-      const error = targetAngle - (b.rotation() - a.rotation());
-      const closestError = Math.atan2(Math.sin(error), Math.cos(error));
-
-      let jointAngvel = b.angvel() - a.angvel();
-      
-      const s = stiffness;
-      const c = damping;
-      const w = jointAngvel;
-      const e = closestError;
-
-      const targetAngVel = (w + dt * s * e) / (1 + dt * c + dt * dt * s);
-      this.wTarget[i] = Math.max(-this.maxRelAngVel, Math.min(this.maxRelAngVel, targetAngVel));
-      i++;
-    }
-    //Find the best impulses to match the computed angvels
-    for (let it = 0; it < this.iterations; it++) {
-      for (let i = 0; i < this.joints.length; i++) {
-      if (this.iEff[i] === 0) continue;
-
-      const { segA, segB } = this.joints[i];
-      const a = segA.rigidBody;
-      const b = segB.rigidBody;
-
-      const jointInnertia = this.iEff[i];
-      const w = b.angvel() - a.angvel();
-
-      let J = jointInnertia * (this.wTarget[i] - w);
-
-      //Impulse
-      const oldJ = this.accJ[i];
-      const maxJ = this.maxJointTorque * dt;
-      this.accJ[i] = Math.max(-maxJ, Math.min(maxJ, oldJ + J));
-      J = this.accJ[i] - oldJ;
-
-      if (!Number.isFinite(J)) continue;
-
-      b.applyTorqueImpulse(J, true);
-      a.applyTorqueImpulse(-J, true);
-      }
-    }
+    this.engine.physics.solveJoints(dt, this.joints, this.maxJointTorque, this.maxRelAngVel);
   }
 
   dispose() {
@@ -171,8 +116,3 @@ export class Creature implements Ticks {
   }
 }
 
-class Tentacle extends Creature {
-  constructor(engine: Engine) {
-    super(engine);
-  }
-}

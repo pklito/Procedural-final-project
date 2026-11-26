@@ -1,4 +1,5 @@
 import RAPIER from '@dimforge/rapier2d-compat';
+import { CreatureJoint } from './creature';
 
 export const FIXED_DT = 1 / 60;
 
@@ -13,6 +14,14 @@ export const Layer = {
 /** Pack a 16-bit membership mask and a 16-bit filter mask into one u32. */
 export const groups = (membership: number, filter: number) =>
   (((membership & 0xffff) << 16) | (filter & 0xffff)) >>> 0;
+
+
+function invInertia(body: RAPIER.RigidBody): number {
+  if (!body.isDynamic()) return 0;
+  const I = body.effectiveAngularInertia();
+  return I > 1e-9 ? 1 / I : 0;
+}
+
 
 export class Physics {
   readonly world: RAPIER.World;
@@ -92,6 +101,65 @@ export class Physics {
 
   removeJoint(joint: RAPIER.ImpulseJoint) {
     this.world.removeImpulseJoint(joint, true);
+  }
+
+  iterations = 8;
+
+  private iEff: number[] = [];
+  private wTarget: number[] = [];
+  private accJ: number[] = [];
+
+  solveJoints(dt: number, joints : CreatureJoint[], maxTorque: number = 500.0, maxRelAngVel = 300.0){
+    let i = 0;
+    // Target angular velocities
+    for (const { segA, segB, targetAngle, stiffness, damping } of joints) {
+      const a = segA.rigidBody;
+      const b = segB.rigidBody;
+
+      const inertiaInvSums = invInertia(a) + invInertia(b);
+      this.iEff[i] = inertiaInvSums > 0 ? 1 / inertiaInvSums : 0;
+      this.accJ[i] = 0;
+
+      const error = targetAngle - (b.rotation() - a.rotation());
+      const closestError = Math.atan2(Math.sin(error), Math.cos(error));
+
+      let jointAngvel = b.angvel() - a.angvel();
+      
+      const s = stiffness;
+      const c = damping;
+      const w = jointAngvel;
+      const e = closestError;
+
+      const targetAngVel = (w + dt * s * e) / (1 + dt * c + dt * dt * s);
+      this.wTarget[i] = Math.max(-maxRelAngVel, Math.min(maxRelAngVel, targetAngVel));
+      i++;
+    }
+    //Find the best impulses to match the computed angvels
+    for (let it = 0; it < this.iterations; it++) {
+      for (let i = 0; i < joints.length; i++) {
+      if (this.iEff[i] === 0) continue;
+
+      const { segA, segB } = joints[i];
+      const a = segA.rigidBody;
+      const b = segB.rigidBody;
+
+      const jointInnertia = this.iEff[i];
+      const w = b.angvel() - a.angvel();
+
+      let J = jointInnertia * (this.wTarget[i] - w);
+
+      //Impulse
+      const oldJ = this.accJ[i];
+      const maxJ = maxTorque * dt;
+      this.accJ[i] = Math.max(-maxJ, Math.min(maxJ, oldJ + J));
+      J = this.accJ[i] - oldJ;
+
+      if (!Number.isFinite(J)) continue;
+
+      b.applyTorqueImpulse(J, true);
+      a.applyTorqueImpulse(-J, true);
+      }
+    }
   }
 }
 
