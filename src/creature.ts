@@ -3,6 +3,7 @@ import type { Engine, Ticks } from './engine';
 import type { Segment } from './segment';
 import type { Vec2 } from './physics';
 import { Layer, groups } from './physics';
+import { Skeleton } from './skeleton';
 
 export interface CreatureJoint {
   joint: RAPIER.ImpulseJoint;
@@ -31,6 +32,7 @@ export class Creature implements Ticks {
   readonly segmentJoints = new Map<Segment, CreatureJoint[]>();
   readonly joints: CreatureJoint[] = [];
   readonly collisionBit: number;
+  readonly skeleton : Skeleton;
 
   straightenStiffness = 200.0;
   straightenDamping = 1.5;
@@ -42,6 +44,7 @@ export class Creature implements Ticks {
 
   constructor(protected engine: Engine) {
     this.collisionBit = engine.physics.allocateCreatureGroup();
+    this.skeleton = new Skeleton(this);
   }
 
   addSegment(seg: Segment): Segment {

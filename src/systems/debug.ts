@@ -6,7 +6,7 @@ import { Vector2 } from '@dimforge/rapier2d-compat';
 
 export class DebugSystem implements UiTicks {
   private lines?: THREE.LineSegments;
-  private jointDebug: JointDebug;
+  readonly jointDebug: JointDebug;
   private showCreatureNames: boolean = true;
   private labels = new Map<Creature, CSS2DObject>();
   private textRenderer: CSS2DRenderer;
@@ -131,22 +131,16 @@ const RED: [number, number, number] = [1.0, 0.25, 0.2];
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 export class JointDebug {
-  readonly lines: THREE.LineSegments;
+  lines: THREE.LineSegments;
   private capacityJoints = 0;
   private pos = new Float32Array(0);
   private col = new Float32Array(0);
   private v = 0;
 
   constructor(private scene: THREE.Scene) {
-    this.lines = new THREE.LineSegments(
-      new THREE.BufferGeometry(),
-      new THREE.LineBasicMaterial({ vertexColors: true, depthTest: false }),
-    );
-    this.lines.position.z = 5;
-    this.lines.renderOrder = 999;
-    this.lines.frustumCulled = false;
-    this.scene.add(this.lines);
+    this.enable();
   }
+
 
   private ensureCapacity(joints: number) {
     if (joints <= this.capacityJoints) return;
@@ -174,6 +168,7 @@ export class JointDebug {
   }
 
   update(creatures: Iterable<Creature>) {
+    if(!this.enabled) return;
     let count = 0;
     for (const c of creatures) count += c.joints.length;
     this.ensureCapacity(count);
@@ -231,8 +226,34 @@ export class JointDebug {
   }
 
   dispose() {
+    this.disable();
+  }
+
+  private enabled = true;
+  setEnabled(on : boolean){
+    if(this.enabled === on) return;
+    this.enabled = on;
+    if(on) this.enable();
+    if(on) return;
+    this.disable();
+  }
+  private enable() {
+    this.lines = new THREE.LineSegments(
+      new THREE.BufferGeometry(),
+      new THREE.LineBasicMaterial({ vertexColors: true, depthTest: false }),
+    );
+    this.lines.position.z = 5;
+    this.lines.renderOrder = 999;
+    this.lines.frustumCulled = false;
+    this.scene.add(this.lines);
+  }
+
+  private disable() {
+    if (!this.lines) return;
     this.scene.remove(this.lines);
     this.lines.geometry.dispose();
     (this.lines.material as THREE.Material).dispose();
+    this.lines = undefined;
+    this.capacityJoints = 0; // force buffers to be rebuilt on next enable
   }
 }

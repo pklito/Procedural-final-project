@@ -82,7 +82,8 @@ import GUI from 'lil-gui';
 
 export class Gui {
   readonly inputs = {
-    creatureNames: false,
+    creatureNames: true,
+    jointDisplay: true,
     simulationSpeed: 1,
   };
   readonly gui = new GUI();
@@ -90,6 +91,9 @@ export class Gui {
     const fdebug = this.gui.addFolder("Debug");
     fdebug.add(this.inputs, 'creatureNames').onChange(() => {
       this.engine.debug.setShowCreatures(this.inputs.creatureNames);
+    });
+    fdebug.add(this.inputs, 'jointDisplay').onChange(() => {
+      this.engine.debug.jointDebug.setEnabled(this.inputs.jointDisplay);
     });
     const fphysics = this.gui.addFolder("Physics");
     fphysics.add(this.inputs, 'simulationSpeed', 0, 2.5, 0.005);
