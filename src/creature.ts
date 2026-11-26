@@ -32,7 +32,7 @@ export class Creature implements Ticks {
   readonly joints: CreatureJoint[] = [];
   readonly collisionBit: number;
 
-  straightenStiffness = 2000.0;
+  straightenStiffness = 200.0;
   straightenDamping = 1.5;
 
   // joint limits

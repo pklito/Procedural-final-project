@@ -113,7 +113,9 @@ export class DebugSystem implements UiTicks {
   }
 }
 
-const AXIS_LEN = 0.6;
+const AXIS_TARGET = [0.4, 0.6];
+const AXIS_CURRENT = [0., 0.3];
+const AXIS_LEN = 0.35;
 const ARC_RADIUS = 0.35;
 const ARC_SEGMENTS = 12;
 const CROSS = 0.06;
@@ -121,8 +123,8 @@ const CROSS = 0.06;
 // per joint: cross (4 verts) + ref (2) + current (2) + target (2) + arc (ARC_SEGMENTS * 2)
 const VERTS_PER_JOINT = 4 + 2 + 2 + 2 + ARC_SEGMENTS * 2;
 
-const GREY: [number, number, number] = [0.6, 0.6, 0.6];
-const GREEN: [number, number, number] = [0.2, 1.0, 0.4];
+const GREY: [number, number, number] = [0.5, 0.5, 0.5];
+const GREEN: [number, number, number] = [0.2, 0.7, 0.1];
 const YELLOW: [number, number, number] = [1.0, 0.85, 0.1];
 const RED: [number, number, number] = [1.0, 0.25, 0.2];
 
@@ -204,8 +206,10 @@ export class JointDebug {
 
         // Reference (segA heading), current (segB), target
         this.seg(px, py, px + Math.cos(refAng) * AXIS_LEN, py + Math.sin(refAng) * AXIS_LEN, GREY);
-        this.seg(px, py, px + Math.cos(curAng) * AXIS_LEN, py + Math.sin(curAng) * AXIS_LEN, GREEN);
-        this.seg(px, py, px + Math.cos(tgtAng) * AXIS_LEN, py + Math.sin(tgtAng) * AXIS_LEN, YELLOW);
+        this.seg(px + Math.cos(curAng) * AXIS_CURRENT[0], py + Math.sin(curAng) * AXIS_CURRENT[0],
+                 px + Math.cos(curAng) * AXIS_CURRENT[1], py + Math.sin(curAng) * AXIS_CURRENT[1], GREEN);
+        this.seg(px + Math.cos(tgtAng) * AXIS_TARGET[0], py + Math.sin(tgtAng) * AXIS_TARGET[0],
+                 px + Math.cos(tgtAng) * AXIS_TARGET[1], py + Math.sin(tgtAng) * AXIS_TARGET[1], YELLOW);
 
         // Error arc from current -> target (short way round)
         for (let i = 0; i < ARC_SEGMENTS; i++) {
