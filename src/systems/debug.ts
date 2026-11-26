@@ -55,25 +55,34 @@ export class DebugSystem implements UiTicks {
   }
 
   //  ---------- CREATURE NAMES ------------
-  private creatureTick(){
-    
-    this.engine.creatures.forEach((c : Creature) => {
-      
+  private creatureTick() {
+    for (const [creature, label] of this.labels) {
+      if (!this.engine.creatures.has(creature)) {
+        this.engine.scene.remove(label);
+        label.element.remove(); // CSS2DObject doesn't clean up its DOM element
+        this.labels.delete(creature);
+      }
+    }
+
+    this.engine.creatures.forEach((c: Creature) => {
       let label = this.labels.get(c);
       if (!label) {
         const div = document.createElement('div');
-        div.textContent = `Creature #${Math.log2(c.collisionBit)-1}`;
-        div.style.cssText ='color: white; font: 12px monospace; white-space: nowrap; text-shadow: 0 0 3px black;';
+        div.textContent = `Creature #${Math.log2(c.collisionBit) - 1}`;
+        div.style.cssText =
+          'color: white; font: 12px monospace; white-space: nowrap; text-shadow: 0 0 3px black;';
         label = new CSS2DObject(div);
         this.engine.scene.add(label);
         this.labels.set(c, label);
       }
 
-      let a = new Vector2(0,0);
-      c.segments.forEach((p, p2, s) => {a.x += p.rigidBody.translation().x / s.size; a.y += p.rigidBody.translation().y/ s.size});
+      let a = new Vector2(0, 0);
+      c.segments.forEach((p, p2, s) => {
+        a.x += p.rigidBody.translation().x / s.size;
+        a.y += p.rigidBody.translation().y / s.size;
+      });
       label.position.set(a.x, a.y + 0.5, 0);
-    })
-    
+    });
   }
 
   //  ---------- SHARED ---------------
@@ -83,15 +92,14 @@ export class DebugSystem implements UiTicks {
     }
   }
   update(dt: number): void {
-    if (this.dontTick) 
-      return;
+    if (this.dontTick) return;
     this.updateInputs();
     this.colliderTick();
     this.creatureTick();
     this.textRenderer.render(this.engine.scene, this.engine.camera);
   }
 
-  resize(){
+  resize() {
     this.textRenderer.setSize(window.innerWidth, window.innerHeight);
   }
 }
