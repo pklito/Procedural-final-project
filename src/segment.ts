@@ -43,7 +43,7 @@ export class Segment extends Entity {
     const cd = Entity.buildCollider(o.shape);
     cd.setDensity(o.density ?? 1);
     cd.setRestitution(o.restitution ?? 0.2);
-    cd.setFriction(o.friction ?? 0.5);
+    cd.setFriction(o.friction ?? 100.0);
     // Default: PROP layer, collides with everything
     cd.setCollisionGroups(groups(Layer.PROP, 0xffff));
 
