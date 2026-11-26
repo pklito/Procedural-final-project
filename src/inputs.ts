@@ -82,10 +82,12 @@ import GUI from 'lil-gui';
 
 export class Gui {
   readonly inputs = {
-    gravity: 9.8,
+    creatureNames: false,
   };
   readonly gui = new GUI();
   constructor(private engine: Engine) {
-    this.gui.add(this.inputs, 'gravity', 9.8);
+    this.gui.add(this.inputs, 'creatureNames').onChange(() => {
+      this.engine.debug.setShowCreatures(this.inputs.creatureNames);
+    });
   }
 }

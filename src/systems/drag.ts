@@ -48,6 +48,9 @@ export class DragSystem implements Ticks {
   }
   /** Find the first dynamic body under the cursor and store it. */
   private grab() {
+    this.dragPosition.x = this.engine.inputs.mouseWorld().x;
+    this.dragPosition.y = this.engine.inputs.mouseWorld().y;
+    this.dragPosition.z = this.engine.inputs.mouseWorld().z;
     const { x, y } = this.engine.inputs.mouseWorld();
 
     this.engine.physics.world.intersectionsWithPoint({ x, y }, (collider) => {

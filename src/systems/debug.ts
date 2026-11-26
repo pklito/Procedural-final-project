@@ -6,7 +6,7 @@ import { Vector2 } from '@dimforge/rapier2d-compat';
 
 export class DebugSystem implements UiTicks {
   private lines?: THREE.LineSegments;
-  private showCreatures: boolean;
+  private showCreatureNames: boolean = true;
   private labels = new Map<Creature, CSS2DObject>();
   private textRenderer: CSS2DRenderer;
 
@@ -56,6 +56,7 @@ export class DebugSystem implements UiTicks {
 
   //  ---------- CREATURE NAMES ------------
   private creatureTick() {
+    if (!this.showCreatureNames) return;
     for (const [creature, label] of this.labels) {
       if (!this.engine.creatures.has(creature)) {
         this.engine.scene.remove(label);
@@ -83,6 +84,11 @@ export class DebugSystem implements UiTicks {
       });
       label.position.set(a.x, a.y + 0.5, 0);
     });
+  }
+
+  setShowCreatures(b: boolean) {
+    this.showCreatureNames = b;
+    this.textRenderer.domElement.style.display = this.showCreatureNames ? '' : 'none';
   }
 
   //  ---------- SHARED ---------------
