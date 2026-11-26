@@ -172,3 +172,10 @@ export function worldToLocal(body: RAPIER.RigidBody, p: Vec2): Vec2 {
   const s = Math.sin(-angle);
   return { x: dx * c - dy * s, y: dx * s + dy * c };
 }
+export function localToWorld(body: RAPIER.RigidBody, p: Vec2): Vec2 {
+  const t = body.translation();
+  const angle = body.rotation(); // radians in rapier 2D
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return { x: (c*p.x - s*p.y) + t.x, y: (s*p.x + c*p.y) + t.y };
+}

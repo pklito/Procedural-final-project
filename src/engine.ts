@@ -113,7 +113,7 @@ export class Engine {
   //physics loop
   start() {
     this.renderer.setAnimationLoop(() => {
-      const dt = this.clock.getDelta();
+      const dt = this.gui.inputs.simulationSpeed*this.clock.getDelta();
       this.accumulator += Math.min(dt, MAX_FRAME);
 
       // Fixed-rate physics ticks

@@ -83,11 +83,15 @@ import GUI from 'lil-gui';
 export class Gui {
   readonly inputs = {
     creatureNames: false,
+    simulationSpeed: 1,
   };
   readonly gui = new GUI();
   constructor(private engine: Engine) {
-    this.gui.add(this.inputs, 'creatureNames').onChange(() => {
+    const fdebug = this.gui.addFolder("Debug");
+    fdebug.add(this.inputs, 'creatureNames').onChange(() => {
       this.engine.debug.setShowCreatures(this.inputs.creatureNames);
     });
+    const fphysics = this.gui.addFolder("Physics");
+    fphysics.add(this.inputs, 'simulationSpeed', 0, 2.5, 0.005);
   }
 }
